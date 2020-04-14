@@ -1,9 +1,7 @@
 from aiogram import Dispatcher
 
-
-# from .is_admin import AdminFilter
+from .private_chat import IsPrivate
 
 
 def setup(dp: Dispatcher):
-    # dp.filters_factory.bind(AdminFilter)
-    pass
+    dp.filters_factory.bind(IsPrivate)
