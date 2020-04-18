@@ -18,15 +18,16 @@ async def show_items(message: Message):
 # Попробуйем отловить по встроенному фильтру, где в нашем call.data содержится "pear"
 @dp.callback_query_handler(text_contains="pear")
 async def buying_pear(call: CallbackQuery):
-    # Обязательно сделать answer, чтобы убрать "часики" после нажатия на кнопку
-    await call.answer()
+    # Обязательно сразу сделать answer, чтобы убрать "часики" после нажатия на кнопку.
+    # Укажем cache_time, чтобы бот не получал какое-то время апдейты, тогда нижний код не будет выполняться.
+    await call.answer(cache_time=60)
 
     callback_data = call.data
 
     # Отобразим что у нас лежит в callback_data
     # logging.info(f"callback_data='{callback_data}'")
     # В питоне 3.8 можно так
-    logging.info(f"{callback_data=},  {call.inline_message_id=}, {call.chat_instance=}")
+    logging.info(f"{callback_data=}")
 
     await call.message.answer("Вы выбрали купить грушу. Груша всего одна. Спасибо.",
                               reply_markup=pear_keyboard)
@@ -35,8 +36,9 @@ async def buying_pear(call: CallbackQuery):
 # Попробуем использовать фильтр от CallbackData
 @dp.callback_query_handler(buy_callback.filter(item_name="apple"))
 async def buying_apples(call: CallbackQuery, callback_data: dict):
-    # Обязательно сделать answer, чтобы убрать "часики" после нажатия на кнопку
-    await call.answer(text="kek", cache_time=100)
+    await call.answer(cache_time=60)
+
+    # Выведем callback_data и тут, чтобы сравнить с предыдущим вариантом.
     logging.info(f"{callback_data=}")
 
     quantity = callback_data.get("quantity")
@@ -49,5 +51,10 @@ async def cancel_buying(call: CallbackQuery):
     # Ответим в окошке с уведомлением!
     await call.answer("Вы отменили эту покупку!", show_alert=True)
 
-    # Отправляем пустую клваиатуру, для того, чтобы ее убрать из сообщения!
+    # Вариант 1 - Отправляем пустую клваиатуру изменяя сообщение, для того, чтобы ее убрать из сообщения!
     await call.message.edit_reply_markup(reply_markup=None)
+
+    # Вариант 2 отправки клавиатуры (по API)
+    # await bot.edit_message_reply_markup(chat_id=call.from_user.id,
+    #                                     message_id=call.message.message_id,
+    #                                     reply_markup=None)
