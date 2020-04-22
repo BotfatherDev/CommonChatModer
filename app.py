@@ -8,7 +8,9 @@ async def on_startup(dp):
     middlewares.setup(dp)
 
     from utils.notify_admins import on_startup_notify
+    from utils.set_bot_commands import set_default_commands
     await on_startup_notify(dp)
+    await set_default_commands(dp)
 
 
 async def on_shutdown(dp):
