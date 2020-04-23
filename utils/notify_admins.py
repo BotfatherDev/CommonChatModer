@@ -8,7 +8,7 @@ from data.config import admins
 async def mail_to_admins(dp):
     for admin in admins:
         try:
-            await dp.bot.send_message(admin, "Бот Запущен")
+            await dp.bot.send_message(admin, "Бот Запущен и готов к работе с группами!")
 
         except Exception as err:
             logging.exception(err)
