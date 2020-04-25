@@ -3,12 +3,12 @@ import datetime
 from aiogram import types
 
 from loader import bot, dp
-from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters import Command, AdminFilter
 from filters import IsGroup
 
 
 # Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
-@dp.message_handler(IsGroup(), Command(commands=["ro"], prefixes="!/"))
+@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ro"], prefixes="!/"))
 async def read_only_mode(message: types.Message):
     member = message.reply_to_message.from_user.id
     chat = message.chat.id
@@ -51,7 +51,7 @@ async def read_only_mode(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"))
+@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unro"], prefixes="!/"))
 async def undo_read_only_mode(message: types.Message):
     member = message.reply_to_message.from_user.id
     chat = message.chat.id
@@ -72,7 +72,7 @@ async def undo_read_only_mode(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["ban"], prefixes="!/"))
+@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ban"], prefixes="!/"))
 async def ban_user(message: types.Message):
     member = message.reply_to_message.from_user.id
     # Вариант 1- по API
@@ -95,7 +95,7 @@ async def ban_user(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"))
+@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unban"], prefixes="!/"))
 async def ban_user(message: types.Message):
     member = message.reply_to_message.from_user.id
     chat = message.chat.id
