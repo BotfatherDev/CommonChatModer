@@ -1,0 +1,14 @@
+  
+version: '3.1'
+
+  commonmoder:
+    container_name: commonmoder
+    build:
+      context: .
+    network_mode: "host"
+
+    command: python app.py
+    restart: always
+
+    env_file:
+      - ".env"
