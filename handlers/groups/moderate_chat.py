@@ -47,6 +47,7 @@ async def read_only_mode(message: types.Message):
     # await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
     # Вариант 2 - сокращенный
+    await message.reply_to_message.delete()
     await message.delete()
     await service_message.delete()
 
