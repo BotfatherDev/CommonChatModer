@@ -40,7 +40,6 @@ async def read_only_mode(message: types.Message):
         /ro спам
     """
     # разбиваем комманду на аргументы, через регулярку
-=======
     member = message.reply_to_message.from_user.id
     chat = message.chat.id
 
