@@ -1,5 +1,7 @@
 import asyncio
 import datetime
+import re
+
 from aiogram import types
 from aiogram.utils.exceptions import BadRequest
 
@@ -20,18 +22,30 @@ async def read_only_mode(message: types.Message):
 
     Примеры:
 
-    Простейший мут на 5 минут:
-        !ro 5
+    Простейший мут на 10 минут:
+        !ro 10
         или
-        /ro 5
+        /ro 10
 
     Мут на 50 минут с причиной мута:
         !ro 50 читай мануал
         или
         /ro 50 читай мануал
+
+    Мут на стандартные 5 минут:
+        !ro спам
+        или
+        /ro спам
     """
+    # разбиваем комманду на аргументы, через регулярку
+    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([a-zA-Z ]+)?")
+    parsed = command_parse.match(message.text)
+    time = parsed.group(2)
+    comment = parsed.group(3)
+    if not time:
+        time = 5
+
     member = message.reply_to_message.from_user.id
-    command, time, *comment = message.text.split(' ')
 
     # Получаем конечную дату, до которой нужно забанить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
@@ -39,7 +53,6 @@ async def read_only_mode(message: types.Message):
     try:
         # Пытаемся забрать права у пользователя
         await message.chat.restrict(user_id=member, can_send_messages=False, until_date=until_date)
-        comment = " ".join(comment)
         await message.answer(
             f"Пользователю {message.reply_to_message.from_user.full_name} запрещено писать {time} минут.\n"
             f"По причине: \n<b>{comment}</b>"
@@ -77,8 +90,13 @@ async def read_only_mode(message: types.Message):
 async def undo_read_only_mode(message: types.Message):
     member = message.reply_to_message.from_user.id
     chat = message.chat.id
-    await bot.restrict_chat_member(chat_id=chat, user_id=member,
-                                   can_send_messages=True)
+    await bot.restrict_chat_member(
+        chat_id=chat, user_id=member,
+        can_send_messages=True,
+        can_add_web_page_previews=True,
+        can_send_media_messages=True,
+        can_send_other_messages=True
+    )
     await message.answer(f"Пользователь {message.reply_to_message.from_user.full_name} был разбанен")
 
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
@@ -97,11 +115,6 @@ async def undo_read_only_mode(message: types.Message):
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ban"], prefixes="!/"))
 async def ban_user(message: types.Message):
     member = message.reply_to_message.from_user.id
-    # Вариант 1- по API
-    # chat = message.chat.id
-    # await bot.kick_chat_member(chat_id=chat, user_id=member)
-
-    # Ваирант 2 - сокращенный
     await message.chat.kick(user_id=member)
 
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
@@ -109,10 +122,6 @@ async def ban_user(message: types.Message):
     await asyncio.sleep(5)
 
     # Удаляем сообщения
-    # Вариант 1 - по API
-    # await bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-
-    # Вариант 2 - сокращенный
     await message.delete()
     await service_message.delete()
 
@@ -120,11 +129,6 @@ async def ban_user(message: types.Message):
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unban"], prefixes="!/"))
 async def ban_user(message: types.Message):
     member = message.reply_to_message.from_user.id
-    chat = message.chat.id
-    # Вариант 1 - по API
-    # await bot.unban_chat_member(chat_id=chat, user_id=member)
-
-    # Вариант 2 - сокращенный
     await message.chat.unban(user_id=member)
 
     # Пишем в чат
