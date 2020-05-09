@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import re
 
+import aiogram
 from aiogram import types
 from aiogram.utils.exceptions import BadRequest
 
@@ -14,6 +15,7 @@ import logging
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ro"], prefixes="!/"))
 async def read_only_mode(message: types.Message):
+
     """
     Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
 
@@ -38,6 +40,10 @@ async def read_only_mode(message: types.Message):
         /ro спам
     """
     # разбиваем комманду на аргументы, через регулярку
+=======
+    member = message.reply_to_message.from_user.id
+    chat = message.chat.id
+
     command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([a-zA-Z ]+)?")
     parsed = command_parse.match(message.text)
     time = parsed.group(2)
@@ -45,7 +51,17 @@ async def read_only_mode(message: types.Message):
     if not time:
         time = 5
 
-    member = message.reply_to_message.from_user.id
+    """
+    !ro 
+    !ro 5 
+    !ro 5 test
+    !ro test
+    !ro test test test
+    /ro 
+    /ro 5 
+    /ro 5 test
+    /ro test
+    """
 
     # Получаем конечную дату, до которой нужно забанить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
@@ -90,6 +106,7 @@ async def read_only_mode(message: types.Message):
 async def undo_read_only_mode(message: types.Message):
     member = message.reply_to_message.from_user.id
     chat = message.chat.id
+    
     await bot.restrict_chat_member(
         chat_id=chat, user_id=member,
         can_send_messages=True,
