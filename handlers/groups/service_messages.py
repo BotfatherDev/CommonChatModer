@@ -13,4 +13,3 @@ async def new_member(message: types.Message):
 async def banned_member(message: types.Message):
     await message.answer(f"{message.left_chat_member.full_name} был удален из чата "
                          f"пользователем {message.from_user.full_name}.")
-
