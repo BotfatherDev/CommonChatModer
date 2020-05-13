@@ -1,15 +1,58 @@
+import asyncio
+import datetime
+
 from aiogram import types
 
-from loader import dp, bot
 from filters import IsGroup
-
-
-@dp.message_handler(IsGroup(), content_types=types.ContentType.NEW_CHAT_MEMBERS)
-async def new_member(message: types.Message):
-    await message.reply(f"Привет, {message.new_chat_members[0].full_name}.")
+from loader import dp
 
 
 @dp.message_handler(IsGroup(), content_types=types.ContentType.LEFT_CHAT_MEMBER)
-async def banned_member(message: types.Message):
-    await message.answer(f"{message.left_chat_member.full_name} был удален из чата "
-                         f"пользователем {message.from_user.full_name}.")
+async def left_chat_member(message: types.Message):
+    """Хендлер для вышедших либо кикнутых пользователей"""
+
+    # TODO: Можно дёрнуть getChatMember на этот ID. Вернётся тип ChatMember с полем status.
+    #  Это поле может принимать разные, значения, есть отдельно left, отдельно kicked
+    #  А left_chat_member в Message в какой-то момент перестанет появляться вообще
+    #  (спасибо челу из чата аиограма)
+
+    # Пропускаем старые запросы
+    if message.date < datetime.datetime.now() - datetime.timedelta(minutes=1):
+        return False
+
+    # Если пользователя удалил бот, то это было сделано через /ban - пропускаем
+    elif message.from_user.id == 1143077900:
+        return False
+
+    # Проверяем вышел ли пользователь сам
+    if message.left_chat_member.id == message.from_user.id:
+        await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} вышел из чата.")
+
+    else:
+        await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} был удален из чата "
+                             f"пользователем {message.from_user.get_mention(as_html=True)}.")
+
+
+@dp.message_handler(IsGroup(), content_types=types.ContentTypes.NEW_CHAT_MEMBERS)
+async def new_chat_member(message: types.Message):
+    # Пропускаем старые запросы
+    if message.date < datetime.datetime.now() - datetime.timedelta(minutes=1):
+        return False
+
+    # Делаем приветствие для новых пользователей
+    # TODO: сделать проверку на ботов с помощью инлайн кнопок
+
+    users = {}
+    for new_member in message.new_chat_members:
+        users[new_member.id] = new_member.get_mention()
+
+    msg = await message.reply(
+        (
+            "{users}, добро пожаловать в чат!"
+        ).format(users=", ".join(users.values()))
+    )
+
+    # Удаляем сообщение через 5 минут
+    await asyncio.sleep(300)
+    await message.delete()
+    await msg.delete()
