@@ -31,7 +31,7 @@ async def read_only_mode(message: types.Message):
         return False
 
     # Разбиваем команду на аргументы с помощью RegExp
-    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?(\w+)?")
+    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+ ]+)?")
     parsed = command_parse.match(message.text)
     time = parsed.group(2)
     reason = parsed.group(3)
