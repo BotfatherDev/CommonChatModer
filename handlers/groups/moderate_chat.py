@@ -1,7 +1,7 @@
-import asyncio
 import datetime
 import re
 
+import asyncio
 from aiogram import types
 from aiogram.dispatcher.filters import Command, AdminFilter
 from aiogram.utils.exceptions import BadRequest
@@ -19,11 +19,14 @@ async def read_only_mode(message: types.Message):
     используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
 
     # Создаем переменные для удобства
+    admin_fullname = message.from_user.full_name
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+
+    # Пробуем присвоить значения пересланного пользователя
     try:
         member_id = message.reply_to_message.from_user.id
+        member_fullname = message.reply_to_message.from_user.full_name
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
-        admin_id = message.from_user.id
-        admin_mentioned = message.from_user.get_mention(as_html=True)
 
     # Ловим ошибку, если пользователь не переслал сообщение
     except AttributeError:
@@ -61,17 +64,17 @@ async def read_only_mode(message: types.Message):
             until_date=until_date)
 
         # Отправляем сообщение
-        await message.reply(
+        await message.answer(
             f"Пользователю {member_mentioned} "
             f"было запрещено писать на {time} минут "
-            f"администратором {admin_mentioned} {reason} ", reply=False)
+            f"администратором {admin_mentioned} {reason} ")
 
         # Вносим информацию о муте в лог
         logger.info(
-            f"Пользователю @{member_id} запрещено писать сообщения до {until_date} админом @{admin_id}"
+            f"Пользователю {member_fullname} запрещено писать сообщения до {until_date} админом {admin_fullname}"
         )
 
-        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд", reply=False)
+        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
         await asyncio.sleep(5)
         await message.reply_to_message.delete()
 
@@ -79,16 +82,15 @@ async def read_only_mode(message: types.Message):
     except BadRequest:
 
         # Отправляем сообщение
-        await message.reply(
+        await message.answer(
             f"Пользователь {member_mentioned} "
-            "является администратором чата, я не могу выдать ему RO",
-            reply=False
+            "является администратором чата, я не могу выдать ему RO"
         )
 
-        service_message = await message.answer(f"Сообщение самоуничтожится через 5 секунд.", reply=False)
+        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
 
         # Вносим информацию о муте в лог
-        logger.info(f"Бот не смог замутить пользователя @{member_id}")
+        logger.info(f"Бот не смог замутить пользователя {member_fullname}")
 
         # Опять ждём перед выполнением следующего блока
         await asyncio.sleep(5)
@@ -108,12 +110,15 @@ async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
 
     # Создаем переменные для удобства
+    admin_fullname = message.from_user.full_name
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+    chat_id = message.chat.id
+
+    # Пробуем присвоить значения пересланного пользователя
     try:
         member_id = message.reply_to_message.from_user.id
+        member_fullname = message.reply_to_message.from_user.full_name
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
-        chat_id = message.chat.id
-        admin_id = message.from_user.id
-        admin_mentioned = message.from_user.get_mention(as_html=True)
 
     # Ловим ошибку, если пользователь не переслал сообщение
     except AttributeError:
@@ -128,12 +133,12 @@ async def undo_read_only_mode(message: types.Message):
     )
 
     # Информируем об этом
-    await message.answer(f"Пользователь {member_mentioned} был размучен администратором {admin_mentioned}", reply=False)
-    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.", reply=False)
+    await message.answer(f"Пользователь {member_mentioned} был размучен администратором {admin_mentioned}")
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Не забываем про лог
     logger.info(
-        f"Пользователь @{member_id} был размучен администратором @{admin_id}"
+        f"Пользователь {member_fullname} был размучен администратором {admin_fullname}"
     )
 
     # Пауза 5 сек
@@ -149,11 +154,15 @@ async def ban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
 
     # Создаем переменные для удобства
+    admin_fullname = message.from_user.full_name
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+
+    # Пробуем присвоить значения пересланного пользователя
     try:
         member_id = message.reply_to_message.from_user.id
+        member_fullname = message.reply_to_message.from_user.full_name
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
-        admin_id = message.from_user.id
-        admin_mentioned = message.from_user.get_mention(as_html=True)
+
     # Ловим ошибку, если пользователь не переслал сообщение
     except AttributeError:
         await message.reply("Ошибка. Нужно переслать сообщение")
@@ -169,9 +178,9 @@ async def ban_user(message: types.Message):
         )
         # Об успешном бане информируем разработчиков в лог
         logger.info(
-            f"Пользователь @{member_id} был забанен админом @{admin_id}"
+            f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
         )
-        service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.", reply=False)
+        service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
 
         # После чего засыпаем на 5 секунд
         await asyncio.sleep(5)
@@ -183,16 +192,15 @@ async def ban_user(message: types.Message):
     except BadRequest:
 
         # Отправляем сообщение
-        await message.reply(
+        await message.answer(
             f"Пользователь {member_mentioned} "
-            "является администратором чата, я не могу выдать ему RO",
-            reply=False
+            "является администратором чата, я не могу выдать ему RO"
         )
 
         service_message = await message.answer(f"Сообщение самоуничтожится через 5 секунд.", reply=False)
 
         # Вносим информацию о бане в лог
-        logger.info(f"Бот не смог забанить пользователя @{member_id}")
+        logger.info(f"Бот не смог забанить пользователя {member_fullname}")
 
         # После чего засыпаем на 5 секунд
         await asyncio.sleep(5)
@@ -212,11 +220,15 @@ async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
     # Создаем переменные для удобства
+    admin_fullname = message.from_user.full_name
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+
+    # Пробуем присвоить значения пересланного пользователя
     try:
         member_id = message.reply_to_message.from_user.id
+        member_fullname = message.reply_to_message.from_user.full_name
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
-        admin_id = message.from_user.id
-        admin_mentioned = message.from_user.get_mention(as_html=True)
+
     # Ловим ошибку, если пользователь не переслал сообщение
     except AttributeError:
         await message.reply("Ошибка. Нужно переслать сообщение")
@@ -226,15 +238,15 @@ async def unban_user(message: types.Message):
     await message.chat.unban(user_id=member_id)
 
     # Пишем в чат
-    await message.answer(f"Пользователь {member_mentioned} был разбанен", reply=False)
-    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.", reply=False)
+    await message.answer(f"Пользователь {member_mentioned} был разбанен")
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Пауза 5 сек
     await asyncio.sleep(5)
 
     # Записываем в логи
     logger.info(
-        f"Пользователь @{member_id} был забанен админом @{admin_id}"
+        f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
     )
 
     # Удаляем сообщения
