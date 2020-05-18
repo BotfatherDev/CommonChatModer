@@ -19,13 +19,13 @@ async def read_only_mode(message: types.Message):
     используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
 
     # Создаем переменные для удобства
-    admin_fullname = message.from_user.full_name
+    admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
 
     # Пробуем присвоить значения пересланного пользователя
     try:
         member_id = message.reply_to_message.from_user.id
-        member_fullname = message.reply_to_message.from_user.full_name
+        member_username = message.reply_to_message.from_user.username
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
     # Ловим ошибку, если пользователь не переслал сообщение
@@ -71,7 +71,7 @@ async def read_only_mode(message: types.Message):
 
         # Вносим информацию о муте в лог
         logger.info(
-            f"Пользователю {member_fullname} запрещено писать сообщения до {until_date} админом {admin_fullname}"
+            f"Пользователю @{member_username} запрещено писать сообщения до {until_date} админом @{admin_username}"
         )
 
         service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
@@ -90,7 +90,7 @@ async def read_only_mode(message: types.Message):
         service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
 
         # Вносим информацию о муте в лог
-        logger.info(f"Бот не смог замутить пользователя {member_fullname}")
+        logger.info(f"Бот не смог замутить пользователя @{member_username}")
 
         # Опять ждём перед выполнением следующего блока
         await asyncio.sleep(5)
@@ -110,14 +110,14 @@ async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
 
     # Создаем переменные для удобства
-    admin_fullname = message.from_user.full_name
+    admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
     chat_id = message.chat.id
 
     # Пробуем присвоить значения пересланного пользователя
     try:
-        member_id = message.reply_to_message.from_user.id
-        member_fullname = message.reply_to_message.from_user.full_name
+        member_id = message.reply_to_message.from_user.username
+        member_username = message.reply_to_message.from_user.username
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
     # Ловим ошибку, если пользователь не переслал сообщение
@@ -127,8 +127,8 @@ async def undo_read_only_mode(message: types.Message):
 
     # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
-        chat_id=chat,
-        user_id=member,
+        chat_id=chat_id,
+        user_id=member_id,
         can_send_messages=True,
         can_add_web_page_previews=True,
         can_send_media_messages=True,
@@ -141,7 +141,7 @@ async def undo_read_only_mode(message: types.Message):
 
     # Не забываем про лог
     logger.info(
-        f"Пользователь {member_fullname} был размучен администратором {admin_fullname}"
+        f"Пользователь @{member_username} был размучен администратором {admin_username}"
     )
 
     # Пауза 5 сек
@@ -223,13 +223,13 @@ async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
     # Создаем переменные для удобства
-    admin_fullname = message.from_user.full_name
+    admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
 
     # Пробуем присвоить значения пересланного пользователя
     try:
         member_id = message.reply_to_message.from_user.id
-        member_fullname = message.reply_to_message.from_user.full_name
+        member_username = message.reply_to_message.from_user.username
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
     # Ловим ошибку, если пользователь не переслал сообщение
@@ -241,7 +241,7 @@ async def unban_user(message: types.Message):
     await message.chat.unban(user_id=member_id)
 
     # Пишем в чат
-    await message.answer(f"Пользователь {member_mentioned} был разбанен")
+    await message.answer(f"Пользователь {member_mentioned} был разбанен администратором {admin_mentioned}")
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Пауза 5 сек
@@ -249,7 +249,7 @@ async def unban_user(message: types.Message):
 
     # Записываем в логи
     logger.info(
-        f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
+        f"Пользователь @{member_username} был забанен админом @{admin_username}"
     )
 
     # Удаляем сообщения
