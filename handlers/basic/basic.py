@@ -31,10 +31,10 @@ async def help_pm(message: types.Message):
         "{header1}"                                         "\n"
         "/start - Начать диалог со мной"                    "\n"
         "/help [комманда] - Помощь по определенной комманде""\n"
-        "\n"
+                                                            "\n"
         "{header2}"                                         "\n"
         "/gay [*args] -  Тест на гея"                       "\n"
-        "\n"
+                                                            "\n"
         "{warning}".format(
             header1=hbold("Основные комманды"),
             header2=hbold("Другие комманды"),
