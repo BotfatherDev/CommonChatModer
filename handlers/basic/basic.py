@@ -2,104 +2,96 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import hbold
 
+from filters import IsGroup, IsPrivate
+from keyboards.inline import start_markup
 from loader import dp
 
 
-@dp.message_handler(Command("start", prefixes="!/"))
+@dp.message_handler(IsPrivate(), Command("start", prefixes="!/"))
 async def start(message: types.Message):
+    """Хендлер на команду !/start
+    Приветствует пользователя.
+    Используется в личных сообщениях"""
 
-    """Хендлер на команду /start
-    используется лишь в личных сообщениях.
-    В группах выводит список комманд из-за
-    того, что та информация особо не нужна в группах"""
+    # Отправляем приветствие
+    await message.answer(f"Привет, {hbold(message.from_user.full_name)}\n\n"
+                         "Я простой чат-менеджер с открытым исходным кодом, "
+                         "который пишется участниками чата по разработке ботов. "
+                         "Для полного функционала добавь меня в группу ", reply_markup=start_markup)
 
-    # Проверяем была ли вызвана комманда из личных сообщений
-    if types.ChatType.is_private(message):
 
-        # Создаем текст, которым будет отвечать
-        text = (
-            "Привет, {user}\n\n"
-            "Я простой чат-менеджер с открытым кодом, "
-            "который пишется участниками чата"
-            "по разработке ботов"
-        ).format(
-            user=hbold(message.from_user.full_name),
-            command="/help"
+@dp.message_handler(IsPrivate(), Command("help", prefixes="!/"))
+async def help_pm(message: types.Message):
+    """Хендлер на команду !/help
+    Выводит список комманд.
+    Используется в личных сообщениях"""
+
+    # Отправляем список комманд
+    await message.answer(
+        "{header1}"                                         "\n"
+        "/start - Начать диалог со мной"                    "\n"
+        "/help [комманда] - Помощь по определенной комманде""\n"
+        "\n"
+        "{header2}"                                         "\n"
+        "/gay [*args] -  Тест на гея"                       "\n"
+        "\n"
+        "{warning}".format(
+            header1=hbold("Основные комманды"),
+            header2=hbold("Другие комманды"),
+            warning=hbold("В группах функционал бота может отличаться")
         )
-
-        # Создаем клавиатуру
-        keyboard_markup = types.InlineKeyboardMarkup(row_width=3)
-
-        # Кнопки с CallBack Data
-        text_and_data = (
-            ('Помощь', 'help'),
-        )
-
-        # Добавляем кнопки с Callback Data
-        row_btns = (types.InlineKeyboardButton(text, callback_data=data) for text, data in text_and_data)
-        keyboard_markup.row(*row_btns)
-
-        # Добавляем обычные кнопки
-        keyboard_markup.add(
-            types.InlineKeyboardButton('Мои исходники', url='https://github.com/Latand/CommonChatModer'),
-            types.InlineKeyboardButton('Чатик', url='https://t.me/bot_devs_novice'),
-        )
-
-        # Отправляем сообщение
-        await message.reply(text, reply_markup=keyboard_markup)
-
-    # Если комманда была вызвана в группе, то отправляем список комманд
-    else:
-        await help(message)
+    )
 
 
-@dp.message_handler(Command("help", prefixes="!/"))
-async def help(message: types.Message):
+@dp.message_handler(IsGroup(), Command("start", prefixes="!/"))
+async def start(message: types.Message):
+    """Хендлер на команду !/start
+    Выводит список комманд в группах
+    Из-за ненадобности такой информарции
+    в группе"""
 
+    # Отправляем список комманд
+    await help_groups(message)
+
+
+@dp.message_handler(IsGroup(), Command("help", prefixes="!/"))
+async def help_groups(message: types.Message):
     """Хендлер на команду /help
     Выводит список комманд."""
 
-    # Создаем текст, которым будем отвечать
-    text = [
-        hbold("\n\nОсновные комманды"),
-        "\n{command} - Начать диалог со мной".format(command="/start"),
-        "\n{command} - Это сообщение".format(command="/help"),
-        hbold("\n\nФан-комманды"),
-        "\n{command} [args] - Проверить на сколько ты или указанный обьект гей".format(command="/gay"),
-    ]
-
-    # Проверяем была ли вызвана комманда в личных сообщениях
-    if types.ChatType.is_private(message):
-        text.extend(
-            [
-                hbold("\n\nВ чатах список может отличаться")
-            ]
+    # Отправляем список комманд
+    await message.answer(
+        "{header1}"                                         "\n"
+        "/start - Начать диалог со мной"                    "\n"
+        "/help [комманда] - Помощь по определенной комманде""\n"
+        "\n"
+        "{header2}"                                         "\n"
+        "/gay [*args] -  Тест на гея"                       "\n"
+        "\n"
+        "{header3}"                                         "\n"
+        "/ro - Выставить RO пользователю"                   "\n"
+        "/unro - Убрать RO у пользователя"                  "\n"
+        "/ban - Забанить пользователя"                      "\n"
+        "/unban - Разбанить пользователя"                   "\n"
+        "\n"
+        "{header4}"                                         "\n"
+        "/set_photo - Изменить фотку"                       "\n"
+        "/set_title - Изменить название"                    "\n"
+        "/set_description - Изменить описание"              "\n"
+        "/pin - Закрепить сообщение"                        "\n"
+        "\n"
+        "{warning}".format(
+            header1=hbold("Основные комманды"),
+            header2=hbold("Другие комманды"),
+            header3=hbold("Администрирование"),
+            header4=hbold("Работа с групой"),
+            warning=hbold("В группах функционал бота может отличаться")
         )
-    # Если комманда все же была вызвана с группы, то добавляем комманды доступные лишь в группах
-    else:
-        text.extend(
-            [
-                hbold("\n\nАдминистрирование чата"),
-                "\n{command} - Выставить RO пользователю".format(command="/ro"),
-                "\n{command} - Убрать RO у пользователя".format(command="/unro"),
-                "\n{command} - Забанить пользователя".format(command="/ban"),
-                "\n{command} - Разбанить пользователя".format(command="/unban"),
-                hbold("\n\nРабота с группой"),
-                "\n{command} - Изменить фотку".format(command="/set_photo"),
-                "\n{command} - Изменить название".format(command="/set_title"),
-                "\n{command} - Изменить описание".format(command="/set_description"),
-                "\n{command} - Закрепить сообщение".format(command="/pin"),
-                hbold("\n\nВ приватных сообщениях список комманд может отличаться."),
-            ]
-        )
-
-    # Отправляем сообщение
-    await message.reply("".join(text))
+    )
 
 
 @dp.callback_query_handler(text='help')
 async def callback_handler(query: types.CallbackQuery):
-
     """Обычный CallBack хендлер,
     который проверяет на что нажал пользователь"""
 
@@ -112,4 +104,4 @@ async def callback_handler(query: types.CallbackQuery):
     await query.answer()
 
     if answer_data == 'help':
-        await help(query.message)
+        await help_pm(query.message)
