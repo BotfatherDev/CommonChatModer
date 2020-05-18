@@ -127,9 +127,12 @@ async def undo_read_only_mode(message: types.Message):
 
     # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
-        chat_id=chat_id,
-        user_id=member_id,
-        can_send_messages=True
+        chat_id=chat,
+        user_id=member,
+        can_send_messages=True,
+        can_add_web_page_previews=True,
+        can_send_media_messages=True,
+        can_send_other_messages=True
     )
 
     # Информируем об этом
