@@ -21,7 +21,8 @@ async def left_chat_member(message: types.Message):
         return False
 
     # Если пользователя удалил бот, то это было сделано через /ban - пропускаем
-    elif message.from_user.id == 1143077900:
+    bot = await message.bot.get_me()
+    elif message.from_user.id == bot.id:
         return False
 
     # Проверяем вышел ли пользователь сам
