@@ -46,13 +46,8 @@ async def new_chat_member(message: types.Message):
     for new_member in message.new_chat_members:
         users[new_member.id] = new_member.get_mention()
 
-    msg = await message.reply(
+    await message.reply(
         (
             "{users}, добро пожаловать в чат!"
         ).format(users=", ".join(users.values()))
     )
-
-    # Удаляем сообщение через 5 минут
-    await asyncio.sleep(300)
-    await message.delete()
-    await msg.delete()
