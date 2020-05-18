@@ -1,21 +1,22 @@
-import os
+from environs import Env
 
-from dotenv import load_dotenv
+env = Env()
+env.read_env()
 
-load_dotenv()
+BOT_TOKEN = env("BOT_TOKEN")
 
-BOT_TOKEN = str(os.getenv("BOT_TOKEN"))
-admins = [
-    362089194,
-]
+SKIP_UPDATES = env.bool("SKIP_UPDATES", False)
+JOIN_NO_MEDIA_TIME = env.int("JOIN_NO_MEDIA_TIME", 10)
+ADMINS_ID = env.list("ADMINS_ID")
 
-ip = os.getenv("ip")
+REDIS_HOST = env("REDIS_HOST", "127.0.0.1")
+REDIS_PORT = env("REDIS_PORT", 6379)
 
 aiogram_redis = {
-    'host': ip,
+    'host': REDIS_HOST,
 }
 
 redis = {
-    'address': (ip, 6379),
+    'address': (REDIS_HOST, REDIS_PORT),
     'encoding': 'utf8'
 }

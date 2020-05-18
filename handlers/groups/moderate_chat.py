@@ -1,103 +1,104 @@
-import asyncio
 import datetime
 import re
 
+import asyncio
 from aiogram import types
-from aiogram.utils.exceptions import BadRequest
-
-from loader import bot, dp
 from aiogram.dispatcher.filters import Command, AdminFilter
-from filters import IsGroup
+from aiogram.utils.exceptions import BadRequest
+from loguru import logger
 
-import logging
+from filters import IsGroup
+from loader import bot, dp
 
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ro"], prefixes="!/"))
 async def read_only_mode(message: types.Message):
-    """
-    Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
-
+    """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
     :time int: время на которое нужно замутить пользователя в минутах
-    :reason str: причина мута
+    :reason str: причина мута. При отсуствии времени и/или причины, то
+    используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
 
-    Примеры:
+    # Создаем переменные для удобства
+    admin_username = message.from_user.username
+    admin_mentioned = message.from_user.get_mention(as_html=True)
 
-    Самый простейший мут без аргументов:
-    .. отвечаем на сообщение от пользователя с текстом
-        !ro
-        или
-        /ro
+    # Пробуем присвоить значения пересланного пользователя
+    try:
+        member_id = message.reply_to_message.from_user.id
+        member_username = message.reply_to_message.from_user.username
+        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
-    Мут на 10 минут:
-    .. отвечаем на сообщение от пользователя с текстом
-        !ro 10
-        или
-        /ro 10
+    # Ловим ошибку, если пользователь не переслал сообщение
+    except AttributeError:
+        await message.reply("Ошибка. Нужно переслать сообщение")
+        return False
 
-    Мут на 50 минут с причиной мута:
-    .. отвечаем на сообщение от пользователя с текстом
-        !ro 50 читай мануал
-        или
-        /ro 50 читай мануал
-
-    Мут на стандартные 5 минут:
-    .. отвечаем на сообщение от пользователя с текстом
-        !ro спам
-        или
-        /ro спам
-    """
-    # разбиваем комманду на аргументы, через регулярку
-    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([a-zA-Z ]+)?")
+    # Разбиваем команду на аргументы с помощью RegExp
+    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+ ]+)?")
     parsed = command_parse.match(message.text)
     time = parsed.group(2)
-    comment = parsed.group(3)
+    reason = parsed.group(3)
+
+    # Проверяем на наличие и корректность срока RO
     if not time:
         time = 5
+    else:
+        if int(time) < 1:
+            time = 1
 
-    member = message.reply_to_message.from_user.id
+    # Проверяем на наличие причины
+    if not reason:
+        reason = "без причины"
+    else:
+        reason = "по причине: " + reason
 
-    # Получаем конечную дату, до которой нужно забанить
+    # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
 
     try:
-        # Пытаемся забрать права у пользователя
-        await message.chat.restrict(user_id=member, can_send_messages=False, until_date=until_date)
 
-        # Готовим сообщение, перед отправкой в чат
-        answer_text = str(
-            f"Пользователю {message.reply_to_message.from_user.get_mention(as_html=True)}"
-            f" запрещено писать {time} минут.\n"
-        )
-        # Если добавлена причина, добавляем её и в сообщение перед ответом
-        if comment:
-            answer_text += f"По причине: \n<b>{comment}</b>"
+        # Пытаемся забрать права у пользователя
+        await message.chat.restrict(
+            user_id=member_id,
+            can_send_messages=False,
+            until_date=until_date)
+
+        # Отправляем сообщение
         await message.answer(
-            answer_text
-        )
+            f"Пользователю {member_mentioned} "
+            f"было запрещено писать на {time} минут "
+            f"администратором {admin_mentioned} {reason} ")
+
         # Вносим информацию о муте в лог
-        logging.info(
-            f"Пользователью @{message.reply_to_message.from_user.username} запрещено писать сообщения до {until_date}"
+        logger.info(
+            f"Пользователю @{member_username} запрещено писать сообщения до {until_date} админом @{admin_username}"
         )
-        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
-        # Если удалось успешно замутить пользователя, ждём 5 секунд
+
+        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
         await asyncio.sleep(5)
-        # а после удаляем сообщение, на которое ссылался администратор, при муте
         await message.reply_to_message.delete()
 
     # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest:
-        service_message = await message.answer(
-            f"Пользователь {message.reply_to_message.from_user.get_mention(as_html=True)} "
-            "является администратором чата, я не могу выдать ему RO\n"
-            "Сообщение самоуничтожится через 5 секунд.",
-            reply=True
+
+        # Отправляем сообщение
+        await message.answer(
+            f"Пользователь {member_mentioned} "
+            "является администратором чата, я не могу выдать ему RO"
         )
+
+        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
+
         # Вносим информацию о муте в лог
-        logging.info(
-            f"Бот не смог замутить пользователя @{message.reply_to_message.from_user.username}"
-        )
-        await asyncio.sleep(5)
+        logger.info(f"Бот не смог замутить пользователя @{member_username}")
+
         # Опять ждём перед выполнением следующего блока
+        await asyncio.sleep(5)
+
+    # В случае любой другой ошибки, пишем её в лог, для последующего деббага
+    except Exception as err:
+        logger.exception(err)
+
     finally:
         # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
         await message.delete()
@@ -106,27 +107,28 @@ async def read_only_mode(message: types.Message):
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unro"], prefixes="!/"))
 async def undo_read_only_mode(message: types.Message):
-    """
-    Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro
+    """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
 
-    Примеры:
+    # Создаем переменные для удобства
+    admin_username = message.from_user.username
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+    chat_id = message.chat.id
 
-    Размут пользователя:
+    # Пробуем присвоить значения пересланного пользователя
+    try:
+        member_id = message.reply_to_message.from_user.username
+        member_username = message.reply_to_message.from_user.username
+        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
-    .. отвечаем на сообщение от пользователя с текстом
-        !unro
-        или
-        /unro
-    """
+    # Ловим ошибку, если пользователь не переслал сообщение
+    except AttributeError:
+        await message.reply("Ошибка. Нужно переслать сообщение")
+        return False
 
-    # Получаем айди чата и пользователя, для дальнейшего использования
-    member = message.reply_to_message.from_user.id
-    chat = message.chat.id
-
-    # Возвращаем пользователю возможность отправлять сообщения и всё из этого вытекающее
+    # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
-        chat_id=chat,
-        user_id=member,
+        chat_id=chat_id,
+        user_id=member_id,
         can_send_messages=True,
         can_add_web_page_previews=True,
         can_send_media_messages=True,
@@ -134,12 +136,12 @@ async def undo_read_only_mode(message: types.Message):
     )
 
     # Информируем об этом
-    await message.answer(f"Пользователь {message.reply_to_message.from_user.get_mention(as_html=True)} был размучен")
+    await message.answer(f"Пользователь {member_mentioned} был размучен администратором {admin_mentioned}")
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Не забываем про лог
-    logging.info(
-        f"Пользователь @{message.reply_to_message.from_user.username} был размучен"
+    logger.info(
+        f"Пользователь @{member_username} был размучен администратором {admin_username}"
     )
 
     # Пауза 5 сек
@@ -152,35 +154,36 @@ async def undo_read_only_mode(message: types.Message):
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ban"], prefixes="!/"))
 async def ban_user(message: types.Message):
-    """
-    Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban
+    """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
 
-    Примеры:
+    # Создаем переменные для удобства
+    admin_fullname = message.from_user.full_name
+    admin_mentioned = message.from_user.get_mention(as_html=True)
 
-    Бан пользователя:
+    # Пробуем присвоить значения пересланного пользователя
+    try:
+        member_id = message.reply_to_message.from_user.id
+        member_fullname = message.reply_to_message.from_user.full_name
+        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
-    .. отвечаем на сообщение от пользователя с текстом
-        !ban
-        или
-        /ban
-    """
-
-    # Получаем айди пользователя
-    member = message.reply_to_message.from_user.id
+    # Ловим ошибку, если пользователь не переслал сообщение
+    except AttributeError:
+        await message.reply("Ошибка. Нужно переслать сообщение")
+        return False
 
     try:
         # Пытаемся удалить пользователя из чата
-        await message.chat.kick(user_id=member)
+        await message.chat.kick(user_id=member_id)
 
         # Информируем об этом
         await message.answer(
-            f"Пользователь {message.reply_to_message.from_user.get_mention(as_html=True)} был успешно забанен"
+            f"Пользователь {member_mentioned} был успешно забанен администратором {admin_mentioned}"
         )
         # Об успешном бане информируем разработчиков в лог
-        logging.info(
-            f"Бот успешно забанил пользователя @{message.reply_to_message.from_user.username}"
+        logger.info(
+            f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
         )
-        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
+        service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
 
         # После чего засыпаем на 5 секунд
         await asyncio.sleep(5)
@@ -189,23 +192,25 @@ async def ban_user(message: types.Message):
         await message.reply_to_message.delete()
 
     # Если бот не может забанить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
-    except BadRequest as err:
-        service_message = await message.answer(
-            f"Пользователь {message.reply_to_message.from_user.get_mention(as_html=True)} "
-            "является администратором чата, я не могу забанить его\n"
-            "Сообщение самоуничтожится через 5 секунд.",
-            reply=True
+    except BadRequest:
+
+        # Отправляем сообщение
+        await message.answer(
+            f"Пользователь {member_mentioned} "
+            "является администратором чата, я не могу выдать ему RO"
         )
-        # Вносим информацию о муте в лог
-        logging.info(
-            f"Бот не смог забанить пользователя @{message.reply_to_message.from_user.username}"
-        )
+
+        service_message = await message.answer(f"Сообщение самоуничтожится через 5 секунд.", reply=False)
+
+        # Вносим информацию о бане в лог
+        logger.info(f"Бот не смог забанить пользователя {member_fullname}")
+
         # После чего засыпаем на 5 секунд
         await asyncio.sleep(5)
 
     # В случае любой другой ошибки, пишем её в лог, для последующего деббага
     except Exception as err:
-        logging.exception(err)
+        logger.exception(err)
 
     finally:
         # В итоге удаляем сообщения
@@ -214,32 +219,38 @@ async def ban_user(message: types.Message):
 
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unban"], prefixes="!/"))
-async def ban_user(message: types.Message):
-    """
-    Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban
+async def unban_user(message: types.Message):
+    """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
-    Примеры:
+    # Создаем переменные для удобства
+    admin_username = message.from_user.username
+    admin_mentioned = message.from_user.get_mention(as_html=True)
 
-    Разбан пользователя:
+    # Пробуем присвоить значения пересланного пользователя
+    try:
+        member_id = message.reply_to_message.from_user.id
+        member_username = message.reply_to_message.from_user.username
+        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
-    .. отвечаем на сообщение от пользователя с текстом
-        !unban
-        или
-        /unban
-    """
-
-    # Получаем айди пользователя
-    member = message.reply_to_message.from_user.id
+    # Ловим ошибку, если пользователь не переслал сообщение
+    except AttributeError:
+        await message.reply("Ошибка. Нужно переслать сообщение")
+        return False
 
     # И разбаниваем
-    await message.chat.unban(user_id=member)
+    await message.chat.unban(user_id=member_id)
 
     # Пишем в чат
-    await message.answer(f"Пользователь {message.reply_to_message.from_user.full_name} был разбанен")
+    await message.answer(f"Пользователь {member_mentioned} был разбанен администратором {admin_mentioned}")
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Пауза 5 сек
     await asyncio.sleep(5)
+
+    # Записываем в логи
+    logger.info(
+        f"Пользователь @{member_username} был забанен админом @{admin_username}"
+    )
 
     # Удаляем сообщения
     await message.delete()

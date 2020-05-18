@@ -1,10 +1,11 @@
 import io
 
 from aiogram import types
-
-from loader import dp, bot
-from filters import IsGroup
 from aiogram.dispatcher.filters import AdminFilter, Command
+from loguru import logger
+
+from filters import IsGroup
+from loader import dp
 
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command("set_photo", prefixes="!/"))
@@ -13,10 +14,12 @@ async def set_new_photo(message: types.Message):
     photo = source_message.photo[-1]
     photo = await photo.download(destination=io.BytesIO())
     input_file = types.InputFile(photo)
-    # Вариант 1
-    # await bot.set_chat_photo(message.chat.id, photo=input_file)
-    # Вариант 2
-    await message.chat.set_photo(photo=input_file)
+
+    try:
+        await message.chat.set_photo(photo=input_file)
+        await message.reply("Фотка была успешна обновлена.")
+    except Exception as err:
+        logger.exception(err)
 
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command("set_title", prefixes="!/"))
@@ -40,3 +43,12 @@ async def set_new_description(message: types.Message):
 
     # Вариант 2
     await message.chat.set_description(description=description)
+
+
+@dp.message_handler(IsGroup(), AdminFilter(), Command("pin", prefixes="!/"))
+async def pin_message(message: types.Message):
+    source_message = message.reply_to_message
+    chat_id = source_message.chat.id
+    message_id = source_message.message_id
+
+    await message.pin(chat_id, message_id)
