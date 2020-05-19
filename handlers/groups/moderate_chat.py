@@ -10,6 +10,8 @@ from loguru import logger
 from filters import IsGroup
 from loader import bot, dp
 
+from data.permissions import user_ro, user_allowed
+
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ro"], prefixes="!/"))
 async def read_only_mode(message: types.Message):
@@ -60,7 +62,7 @@ async def read_only_mode(message: types.Message):
         # Пытаемся забрать права у пользователя
         await message.chat.restrict(
             user_id=member_id,
-            can_send_messages=False,
+            permissions=user_ro,
             until_date=until_date)
 
         # Отправляем сообщение
@@ -98,7 +100,6 @@ async def read_only_mode(message: types.Message):
     # В случае любой другой ошибки, пишем её в лог, для последующего деббага
     except Exception as err:
         logger.exception(err)
-
     finally:
         # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
         await message.delete()
@@ -116,7 +117,7 @@ async def undo_read_only_mode(message: types.Message):
 
     # Пробуем присвоить значения пересланного пользователя
     try:
-        member_id = message.reply_to_message.from_user.username
+        member_id = message.reply_to_message.from_user.id
         member_username = message.reply_to_message.from_user.username
         member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
@@ -129,10 +130,7 @@ async def undo_read_only_mode(message: types.Message):
     await bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=member_id,
-        can_send_messages=True,
-        can_add_web_page_previews=True,
-        can_send_media_messages=True,
-        can_send_other_messages=True
+        permissions=user_allowed,
     )
 
     # Информируем об этом
@@ -211,7 +209,6 @@ async def ban_user(message: types.Message):
     # В случае любой другой ошибки, пишем её в лог, для последующего деббага
     except Exception as err:
         logger.exception(err)
-
     finally:
         # В итоге удаляем сообщения
         await message.delete()

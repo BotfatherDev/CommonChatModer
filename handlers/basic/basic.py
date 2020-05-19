@@ -7,9 +7,9 @@ from keyboards.inline import start_markup
 from loader import dp
 
 
-@dp.message_handler(IsPrivate(), Command("start", prefixes="!/"))
+@dp.message_handler(IsPrivate(), Command("start", prefixes="/"))
 async def start(message: types.Message):
-    """Хендлер на команду !/start
+    """Хендлер на команду /start
     Приветствует пользователя.
     Используется в личных сообщениях"""
 
@@ -20,9 +20,9 @@ async def start(message: types.Message):
                          "Для полного функционала добавь меня в группу ", reply_markup=start_markup)
 
 
-@dp.message_handler(IsPrivate(), Command("help", prefixes="!/"))
+@dp.message_handler(IsPrivate(), Command("help", prefixes="/"))
 async def help_pm(message: types.Message):
-    """Хендлер на команду !/help
+    """Хендлер на команду /help
     Выводит список комманд.
     Используется в личных сообщениях"""
 
@@ -43,9 +43,9 @@ async def help_pm(message: types.Message):
     )
 
 
-@dp.message_handler(IsGroup(), Command("start", prefixes="!/"))
+@dp.message_handler(IsGroup(), Command("start", prefixes="/"))
 async def start(message: types.Message):
-    """Хендлер на команду !/start
+    """Хендлер на команду /start
     Выводит список комманд в группах
     Из-за ненадобности такой информарции
     в группе"""
@@ -54,7 +54,7 @@ async def start(message: types.Message):
     await help_groups(message)
 
 
-@dp.message_handler(IsGroup(), Command("help", prefixes="!/"))
+@dp.message_handler(IsGroup(), Command("help", prefixes="/"))
 async def help_groups(message: types.Message):
     """Хендлер на команду /help
     Выводит список комманд."""
@@ -95,13 +95,8 @@ async def callback_handler(query: types.CallbackQuery):
     """Обычный CallBack хендлер,
     который проверяет на что нажал пользователь"""
 
-    # Присваиваем query дату переменной
-    answer_data = query.data
-
     # Отвечаем пользователю, чтоб возле инлайн кнопки
     # не было "часиков", это нужно делать даже когда нечего сказать
     # P.S. пользователь сообщение не увидит без аргумента show_alert=True
     await query.answer()
-
-    if answer_data == 'help':
-        await help_pm(query.message)
+    await help_pm(query.message)
