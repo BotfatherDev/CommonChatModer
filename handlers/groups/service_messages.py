@@ -78,7 +78,7 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
     # и айди чата, для последнующей выдачи прав
     chat_id = int(query.message.chat.id)
 
-    # если на кнопку нажал не только что вошедший пользователь, убираем у него часики и игнорируем (выходим из функции)
+    # если на кнопку нажал не только что вошедший пользователь, убираем у него часики и игнорируем (выходим из функции).
     if query.from_user.id != user_id:
         await query.answer()
         return
