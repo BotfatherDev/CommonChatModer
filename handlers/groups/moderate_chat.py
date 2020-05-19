@@ -36,7 +36,7 @@ async def read_only_mode(message: types.Message):
         return False
 
     # Разбиваем команду на аргументы с помощью RegExp
-    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+ ]+)?")
+    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
     time = parsed.group(2)
     reason = parsed.group(3)
@@ -52,7 +52,7 @@ async def read_only_mode(message: types.Message):
     if not reason:
         reason = "без причины"
     else:
-        reason = "по причине: " + reason
+        reason = "по причине:\n" + reason
 
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
