@@ -36,26 +36,26 @@ async def read_only_mode(message: types.Message):
         return False
 
     # Разбиваем команду на аргументы с помощью RegExp
-    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?")
+    command_parse = re.compile(r"(!ro|/ro) ?(\d+,\d+|\d+.\d+)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
-    time = parsed.group(2)
+    time = float(parsed.group(2).replace(",", ".")) * 60
     reason = parsed.group(3)
 
     # Проверяем на наличие и корректность срока RO
     if not time:
-        time = 5
+        time = 5 * 60
     else:
-        if int(time) < 1:
-            time = 1
+        if time < 1 * 60:
+            time = 1 * 60
 
     # Проверяем на наличие причины
     if not reason:
-        reason = "без причины"
+        reason = "без указания причины"
     else:
         reason = "по причине:\n" + reason
 
     # Получаем конечную дату, до которой нужно замутить
-    until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
+    until_date = datetime.datetime.now() + datetime.timedelta(seconds=time)
 
     try:
 
