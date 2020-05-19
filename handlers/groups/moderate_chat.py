@@ -55,7 +55,7 @@ async def read_only_mode(message: types.Message):
         reason = "по причине:\n" + reason
 
     # Получаем конечную дату, до которой нужно замутить
-    until_date = datetime.datetime.now() + datetime.timedelta(seconds=time)
+    until_date = datetime.datetime.now() + datetime.timedelta(seconds=float(time))
 
     try:
 
