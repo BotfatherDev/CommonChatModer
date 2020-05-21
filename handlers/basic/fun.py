@@ -6,7 +6,7 @@ from aiogram.dispatcher.filters import Command
 
 from loader import dp
 
-from utils.misc.throttling import generate_num
+from utils.misc.random_num_generator import generate_num
 
 
 @dp.message_handler(Command("gay", prefixes="!/"))
