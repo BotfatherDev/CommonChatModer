@@ -22,7 +22,7 @@ async def gay(message: types.Message):
         !gay Vasya
     """
     # разбиваем сообщение на комманду и аргументы через регулярное выражение
-    command_parse = re.compile(r"(!gay|/gay) ?(\w+)?")
+    command_parse = re.compile(r"(!gay|/gay) ?([\w ]+)?")
     parsed = command_parse.match(message.text)
     target = parsed.group(2)
     percentage = randint(0, 100)
