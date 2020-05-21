@@ -38,7 +38,6 @@ async def biba(message: types.Message):
 
 @dp.message_handler(Command("roll", prefixes="!/"))
 async def roll(message: types.Message):
-    # TODO реализовать отрицательные числа, например /roll -190:-15 или /roll -190, -15
     command_parse = re.compile(r"(!roll|/roll) ?(-?\d*)?-?(\d+)?")
     parsed = command_parse.match(message.text)
     width = generate_num(parsed.group(2), parsed.group(3))
