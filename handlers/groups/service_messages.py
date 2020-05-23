@@ -2,14 +2,11 @@ import datetime
 
 from aiogram import types
 
-from filters import IsGroup
-from loader import dp
-
-from keyboards.inline import generate_confirm_markup, user_callback
-
-from loader import bot
-
 from data.permissions import new_user_added, user_allowed
+from filters import IsGroup
+from keyboards.inline import generate_confirm_markup, user_callback
+from loader import bot
+from loader import dp
 
 
 @dp.message_handler(IsGroup(), content_types=types.ContentType.LEFT_CHAT_MEMBER)
@@ -52,7 +49,7 @@ async def new_chat_member(message: types.Message):
     )
 
     # TODO вместо кучи сообщений, отправлять одно с несколькими айдишниками
-    
+
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
         await message.reply(

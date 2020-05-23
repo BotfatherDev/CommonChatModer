@@ -1,3 +1,7 @@
+"""Тут находяться рофлян хендлеры.
+Не воспринимайте их серьезно. Но
+функции полезные, даже очень"""
+
 import re
 from random import randint
 
@@ -5,14 +9,12 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from loader import dp
-
 from utils.misc.random_num_generator import generate_num
 
 
 @dp.message_handler(Command("gay", prefixes="!/"))
 async def gay(message: types.Message):
     """Хедлер, для обработки комманды /gay или !gay
-
     В ответ, бот отправляет то, на сколько пользователь является геем
 
     Примеры:
@@ -22,7 +24,7 @@ async def gay(message: types.Message):
         !gay Vasya
     """
     # разбиваем сообщение на комманду и аргументы через регулярное выражение
-    command_parse = re.compile(r"(!gay|/gay) ?([\w ]+)?")
+    command_parse = re.compile(r"(!gay|/gay) ?([\w+ ]+)?")
     parsed = command_parse.match(message.text)
     target = parsed.group(2)
     percentage = randint(0, 100)
@@ -65,7 +67,7 @@ async def biba(message: types.Message):
         target = message.from_user.get_mention(as_html=True)
 
     # отправляем
-    await message.reply(f"🤤 У {target} биба {length}см")
+    await message.reply(f"🤤 У {target} биба {length} см")
 
 
 @dp.message_handler(Command("roll", prefixes="!/"))
