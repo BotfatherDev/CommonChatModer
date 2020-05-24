@@ -36,26 +36,23 @@ async def read_only_mode(message: types.Message):
         return False
 
     # Разбиваем команду на аргументы с помощью RegExp
-    command_parse = re.compile(r"(!ro|/ro) ?(\d+,\d+|\d+\.\d+)? ?([\w+\D]+)?")
+    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
-    time = float(parsed.group(2).replace(",", ".")) * 60
+    time = parsed.group(2)
     reason = parsed.group(3)
-
     # Проверяем на наличие и корректность срока RO
     if not time:
-        time = 5 * 60
+        time = 5
     else:
-        if time < 1 * 60:
-            time = 1 * 60
-
+        if int(time) < 1:
+            time = 1
     # Проверяем на наличие причины
     if not reason:
         reason = "без указания причины"
     else:
-        reason = "по причине:\n" + reason
-
+        reason = "по причине: " + reason
     # Получаем конечную дату, до которой нужно замутить
-    until_date = datetime.datetime.now() + datetime.timedelta(seconds=float(time))
+    until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
 
     try:
 
@@ -139,7 +136,7 @@ async def undo_read_only_mode(message: types.Message):
 
     # Не забываем про лог
     logger.info(
-        f"Пользователь @{member_username} был размучен администратором {admin_username}"
+        f"Пользователь @{member_username} был размучен администратором @{admin_username}"
     )
 
     # Пауза 5 сек
