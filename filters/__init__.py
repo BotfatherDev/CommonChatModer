@@ -1,7 +1,7 @@
 from aiogram import Dispatcher
 
-from .user_fillters import IsContributor
-from .chat_fillters import IsGroup, IsPrivate
+from .user_filters import IsContributor
+from .chat_filters import IsGroup, IsPrivate
 
 
 def setup(dp: Dispatcher):
