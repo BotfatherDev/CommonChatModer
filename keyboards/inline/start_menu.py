@@ -20,3 +20,9 @@ start_markup.add(
     types.InlineKeyboardButton('Мои исходники', url='https://github.com/Latand/CommonChatModer'),
     types.InlineKeyboardButton('Чатик', url='https://t.me/bot_devs_novice'),
 )
+
+
+source_markup = types.InlineKeyboardMarkup()
+source_markup.insert(
+    types.InlineKeyboardButton('Исходники бота', url='https://github.com/Latand/CommonChatModer'),
+)

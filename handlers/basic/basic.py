@@ -100,3 +100,4 @@ async def callback_handler(query: types.CallbackQuery):
     # P.S. пользователь сообщение не увидит без аргумента show_alert=True
     await query.answer()
     await help_pm(query.message)
+
