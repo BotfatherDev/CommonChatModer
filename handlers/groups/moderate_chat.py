@@ -1,16 +1,15 @@
+import asyncio
 import datetime
 import re
 
-import asyncio
 from aiogram import types
 from aiogram.dispatcher.filters import Command, AdminFilter
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
+from data.permissions import user_ro, user_allowed
 from filters import IsGroup
 from loader import bot, dp
-
-from data.permissions import user_ro, user_allowed
 
 
 @dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ro"], prefixes="!/"))

@@ -44,11 +44,3 @@ async def set_new_description(message: types.Message):
     # Вариант 2
     await message.chat.set_description(description=description)
 
-
-@dp.message_handler(IsGroup(), AdminFilter(), Command("pin", prefixes="!/"))
-async def pin_message(message: types.Message):
-    source_message = message.reply_to_message
-    chat_id = source_message.chat.id
-    message_id = source_message.message_id
-
-    await message.pin(chat_id, message_id)
