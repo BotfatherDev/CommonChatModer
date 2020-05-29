@@ -1,15 +1,13 @@
+
 import datetime
 
 from aiogram import types
 
-from filters import IsGroup
-from loader import dp
-
-from keyboards.inline import generate_confirm_markup, user_callback, source_markup
-
-from loader import bot
-
 from data.permissions import new_user_added, user_allowed
+from filters import IsGroup
+from keyboards.inline import generate_confirm_markup, user_callback, source_markup
+from loader import bot
+from loader import dp
 
 
 @dp.message_handler(IsGroup(), content_types=types.ContentType.LEFT_CHAT_MEMBER)
