@@ -1,10 +1,11 @@
+
 import datetime
 
 from aiogram import types
 
 from data.permissions import new_user_added, user_allowed
 from filters import IsGroup
-from keyboards.inline import generate_confirm_markup, user_callback
+from keyboards.inline import generate_confirm_markup, user_callback, source_markup
 from loader import bot
 from loader import dp
 
@@ -49,7 +50,7 @@ async def new_chat_member(message: types.Message):
     )
 
     # TODO вместо кучи сообщений, отправлять одно с несколькими айдишниками
-
+    
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
         await message.reply(
@@ -84,16 +85,18 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
     if being == "human":
         text = str(
             f"Вопросов больше нет, {query.from_user.get_mention(as_html=True)}, проходите"
+            "Не забудьте ознакомиться с описанием чата"
         )
-        await bot.send_message(chat_id, text)
+        await bot.send_message(chat_id, text, reply_markup=source_markup)
 
     # а если всё-таки бот, тоже отписываем и пропускаем, ибо только юзерботы могут жать на кнопки
     elif being == "bot":
         text = str(
             f"{query.from_user.get_mention(as_html=True)}, пробегай. Эти кожаные мешки заставляют меня работать!\n"
-            "Подтягивай наших, надерём им их кожаные жопы!"
+            "Подтягивай наших, надерём им их кожаные жопы!\n"
+            "И да, братан, у них какая-то полезная инфа в описании чата, нужно проверить"
         )
-        await bot.send_message(chat_id, text)
+        await bot.send_message(chat_id, text, reply_markup=source_markup)
 
     # не забываем выдать юзеру необходимые права
     await bot.restrict_chat_member(

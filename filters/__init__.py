@@ -1,11 +1,11 @@
 from aiogram import Dispatcher
 
-from .group_chat import IsGroup
-from .private_chat import IsPrivate
+from .user_filters import IsContributor
+from .chat_filters import IsGroup, IsPrivate
 from .is_banable import IsBanable
 
-
 def setup(dp: Dispatcher):
+    dp.filters_factory.bind(IsContributor)
     dp.filters_factory.bind(IsGroup)
     dp.filters_factory.bind(IsPrivate)
     dp.filters_factory.bind(IsBanable)
