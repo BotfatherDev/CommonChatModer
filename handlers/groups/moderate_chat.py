@@ -12,7 +12,7 @@ from filters import IsGroup
 from loader import bot, dp
 
 
-@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ro"], prefixes="!/"))
+@dp.message_handler(IsGroup(), Command(commands=["ro"], prefixes="!/"), AdminFilter())
 async def read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
     :time int: время на которое нужно замутить пользователя в минутах
@@ -102,7 +102,7 @@ async def read_only_mode(message: types.Message):
         await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unro"], prefixes="!/"))
+@dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"), AdminFilter())
 async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
 
@@ -146,7 +146,7 @@ async def undo_read_only_mode(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["ban"], prefixes="!/"))
+@dp.message_handler(IsGroup(), Command(commands=["ban"], prefixes="!/"), AdminFilter())
 async def ban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
 
@@ -211,7 +211,7 @@ async def ban_user(message: types.Message):
         await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), AdminFilter(), Command(commands=["unban"], prefixes="!/"))
+@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), AdminFilter())
 async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
