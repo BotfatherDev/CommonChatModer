@@ -3,7 +3,7 @@ import datetime
 import re
 
 from aiogram import types
-from aiogram.dispatcher.filters import Command, AdminFilter
+from aiogram.dispatcher.filters import Command, CanBan
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
@@ -12,7 +12,7 @@ from filters import IsGroup
 from loader import bot, dp
 
 
-@dp.message_handler(IsGroup(), Command(commands=["ro"], prefixes="!/"), AdminFilter())
+@dp.message_handler(IsGroup(), Command(commands=["ro"], prefixes="!/"), CanBan())
 async def read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
     :time int: время на которое нужно замутить пользователя в минутах
@@ -102,7 +102,7 @@ async def read_only_mode(message: types.Message):
         await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"), AdminFilter())
+@dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"), CanBan())
 async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
 
@@ -146,7 +146,7 @@ async def undo_read_only_mode(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["ban"], prefixes="!/"), AdminFilter())
+@dp.message_handler(IsGroup(), Command(commands=["ban"], prefixes="!/"), CanBan())
 async def ban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
 
@@ -211,7 +211,7 @@ async def ban_user(message: types.Message):
         await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), AdminFilter())
+@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), CanBan())
 async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
