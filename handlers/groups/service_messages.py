@@ -84,7 +84,7 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
     # далее, если пользователь выбрал кнопку "человек" сообщаем ему об этом
     if being == "human":
         text = str(
-            f"Вопросов больше нет, {query.from_user.get_mention(as_html=True)}, проходите"
+            f"Вопросов больше нет, {query.from_user.get_mention(as_html=True)}, проходите\n"
             "Не забудьте ознакомиться с описанием чата"
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
