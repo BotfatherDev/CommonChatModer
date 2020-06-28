@@ -3,12 +3,12 @@ import datetime
 import re
 
 from aiogram import types
-from aiogram.dispatcher.filters import Command, CanBan
+from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
 from data.permissions import user_ro, user_allowed
-from filters import IsGroup
+from filters import IsGroup, CanBan
 from loader import bot, dp
 
 
