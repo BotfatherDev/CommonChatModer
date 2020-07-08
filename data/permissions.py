@@ -35,3 +35,14 @@ user_ro = types.ChatPermissions(
     can_change_info=False,
     can_pin_messages=False,
 )
+
+no_media = types.ChatPermissions(
+    can_send_messages=True,
+    can_send_media_messages=False,
+    can_send_polls=False,
+    can_send_other_messages=False,
+    can_add_web_page_previews=False,
+    can_invite_users=True,
+    can_change_info=False,
+    can_pin_messages=False,
+)
