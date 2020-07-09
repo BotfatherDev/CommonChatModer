@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
-from data.permissions import user_ro, user_allowed
+from data.permissions import user_ro, user_allowed, no_media
 from filters import IsGroup, CanBan
 from loader import bot, dp
 
@@ -248,3 +248,145 @@ async def unban_user(message: types.Message):
     # Удаляем сообщения
     await message.delete()
     await service_message.delete()
+
+
+@dp.message_handler(IsGroup(), Command(commands=["media_false"], prefixes="!/"), CanBan())
+async def media_false_handler(message: types.Message):
+    """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
+    :time int: время на которое нужно замутить пользователя в минутах
+    :reason str: причина мута. При отсуствии времени и/или причины, то
+    используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
+
+    # Создаем переменные для удобства
+    admin_username = message.from_user.username
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+
+    # Пробуем присвоить значения пересланного пользователя
+    try:
+        member_id = message.reply_to_message.from_user.id
+        member_username = message.reply_to_message.from_user.username
+        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+
+    # Ловим ошибку, если пользователь не переслал сообщение
+    except AttributeError:
+        await message.reply("Ошибка. Нужно переслать сообщение")
+        return
+
+    # Разбиваем команду на аргументы с помощью RegExp
+    command_parse = re.compile(r"(!media_false|/media_false) ?(\d+)?")
+    parsed = command_parse.match(message.text)
+    time = parsed.group(2)
+
+    answer_text = f"Пользователю {member_mentioned} было был лишён права использовать медиаконтент "
+    if time:
+        answer_text += f'на {time} минут\n'
+    answer_text += f"администратором {admin_mentioned}"
+
+    # Проверяем на наличие и корректность срока RO
+    if not time:
+        # Более 366 дней -- навсегда
+        time = 0.1
+
+    # Получаем конечную дату, до которой нужно замутить
+    until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
+
+    try:
+        # Пытаемся забрать права у пользователя
+        await message.chat.restrict(
+            user_id=member_id,
+            permissions=no_media,
+            until_date=until_date)
+
+        # Отправляем сообщение
+        await message.answer(text=answer_text)
+
+        # Вносим информацию о муте в лог
+        logger.info(
+            f"Пользователю @{member_username} запрещено использовать медиаконтент до {until_date} админом @{admin_username}"
+        )
+
+        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
+        await asyncio.sleep(5)
+        await message.reply_to_message.delete()
+
+    # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
+    except BadRequest:
+
+        # Отправляем сообщение
+        await message.answer(
+            f"Пользователь {member_mentioned} "
+            "является администратором чата, изменить его права"
+        )
+
+        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
+
+        # Вносим информацию о муте в лог
+        logger.info(f"Бот не смог забрать права у пользователя @{member_username}")
+
+        # Опять ждём перед выполнением следующего блока
+        await asyncio.sleep(5)
+    finally:
+        # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
+        await message.delete()
+        await service_message.delete()
+
+
+@dp.message_handler(IsGroup(), Command(commands=["media_true"], prefixes="!/"), CanBan())
+async def media_true_handler(message: types.Message):
+
+    # Создаем переменные для удобства
+    admin_username = message.from_user.username
+    admin_mentioned = message.from_user.get_mention(as_html=True)
+    chat_id = message.chat.id
+
+    # Пробуем присвоить значения пересланного пользователя
+    try:
+        member_id = message.reply_to_message.from_user.id
+        member_username = message.reply_to_message.from_user.username
+        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+
+    # Ловим ошибку, если пользователь не переслал сообщение
+    except AttributeError:
+        await message.reply("Ошибка. Нужно переслать сообщение")
+        return
+
+    try:
+        # Возвращаем пользователю возможность отправлять сообщения
+        await bot.restrict_chat_member(
+            chat_id=chat_id,
+            user_id=member_id,
+            permissions=user_allowed,
+        )
+
+        # Информируем об этом
+        await message.answer(f"Пользователь {member_mentioned} благодаря {admin_mentioned} может снова использовать медиаконтент")
+
+        # Не забываем про лог
+        logger.info(
+            f"Пользователь @{member_username} благодаря @{admin_username} может снова использовать медиаконтент"
+        )
+
+        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
+        await asyncio.sleep(5)
+        await message.reply_to_message.delete()
+        # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
+    except BadRequest:
+
+        # Отправляем сообщение
+        await message.answer(
+            f"Пользователь {member_mentioned} "
+            "является администратором чата, изменить его права"
+        )
+
+        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
+
+        # Вносим информацию о муте в лог
+        logger.info(f"Бот не смог вернуть права пользователю @{member_username}")
+
+        # Опять ждём перед выполнением следующего блока
+        await asyncio.sleep(5)
+        # В случае любой другой ошибки, пишем её в лог, для последующего деббага
+    finally:
+        # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
+        await message.delete()
+        await service_message.delete()
