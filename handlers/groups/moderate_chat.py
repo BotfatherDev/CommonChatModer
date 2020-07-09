@@ -252,12 +252,6 @@ async def unban_user(message: types.Message):
 
 @dp.message_handler(IsGroup(), Command(commands=["media_false"], prefixes="!/"), CanBan())
 async def media_false_handler(message: types.Message):
-    """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
-    :time int: время на которое нужно замутить пользователя в минутах
-    :reason str: причина мута. При отсуствии времени и/или причины, то
-    используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
-
-    # Создаем переменные для удобства
     admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
 
@@ -271,8 +265,6 @@ async def media_false_handler(message: types.Message):
     except AttributeError:
         await message.reply("Ошибка. Нужно переслать сообщение")
         return
-
-    # Разбиваем команду на аргументы с помощью RegExp
     command_parse = re.compile(r"(!media_false|/media_false) ?(\d+)?")
     parsed = command_parse.match(message.text)
     time = parsed.group(2)
@@ -282,9 +274,9 @@ async def media_false_handler(message: types.Message):
         answer_text += f'на {time} минут\n'
     answer_text += f"администратором {admin_mentioned}"
 
-    # Проверяем на наличие и корректность срока RO
+    # Проверяем на наличие и корректность срока media_false
     if not time:
-        # Более 366 дней -- навсегда
+        # мение 30 секунд -- навсегда (время в минутах)
         time = 0.1
 
     # Получаем конечную дату, до которой нужно замутить
@@ -309,7 +301,8 @@ async def media_false_handler(message: types.Message):
         await asyncio.sleep(5)
         await message.reply_to_message.delete()
 
-    # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
+    # Если бот не может изменить права пользователя (администратора),
+    # возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest:
 
         # Отправляем сообщение
@@ -333,8 +326,6 @@ async def media_false_handler(message: types.Message):
 
 @dp.message_handler(IsGroup(), Command(commands=["media_true"], prefixes="!/"), CanBan())
 async def media_true_handler(message: types.Message):
-
-    # Создаем переменные для удобства
     admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
     chat_id = message.chat.id
@@ -351,7 +342,7 @@ async def media_true_handler(message: types.Message):
         return
 
     try:
-        # Возвращаем пользователю возможность отправлять сообщения
+        # Возвращаем пользователю возможность отправлять медиаконтент
         await bot.restrict_chat_member(
             chat_id=chat_id,
             user_id=member_id,
@@ -360,8 +351,6 @@ async def media_true_handler(message: types.Message):
 
         # Информируем об этом
         await message.answer(f"Пользователь {member_mentioned} благодаря {admin_mentioned} может снова использовать медиаконтент")
-
-        # Не забываем про лог
         logger.info(
             f"Пользователь @{member_username} благодаря @{admin_username} может снова использовать медиаконтент"
         )
@@ -369,7 +358,8 @@ async def media_true_handler(message: types.Message):
         service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
         await asyncio.sleep(5)
         await message.reply_to_message.delete()
-        # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
+        # Если бот не может забрать права пользователя (администратора),
+        # возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest:
 
         # Отправляем сообщение
@@ -383,9 +373,7 @@ async def media_true_handler(message: types.Message):
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог вернуть права пользователю @{member_username}")
 
-        # Опять ждём перед выполнением следующего блока
         await asyncio.sleep(5)
-        # В случае любой другой ошибки, пишем её в лог, для последующего деббага
     finally:
         # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
         await message.delete()
