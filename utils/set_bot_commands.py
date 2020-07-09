@@ -13,4 +13,6 @@ async def set_default_commands(dp):
         types.BotCommand("unro", "Размутить пользователя"),
         types.BotCommand("ban", "Забанить пользователя"),
         types.BotCommand("unban", "Разбанить пользователя"),
+        types.BotCommand("media_false", "Запрещает использование media"),
+        types.BotCommand("media_true", "Разрешает использование media"),
     ])
