@@ -27,9 +27,9 @@ class Database:
         connection.close()
         return data
 
-    def create_table_users(self):
+    def create_table_stickers(self):
         sql = """
-        CREATE TABLE BannedStickers (
+        CREATE TABLE BannedStickers(
             set_name varchar(255) NOT NULL
             );
 """
@@ -45,13 +45,13 @@ class Database:
     def block_sticker(self, set_name: str):
 
         sql = """
-        INSERT INTO BlockedStickers(set_name) VALUES(?)
+        INSERT INTO BannedStickers(set_name) VALUES(?)
         """
         self.execute(sql, parameters=(set_name,), commit=True)
 
     def select_all_sets(self):
         sql = """
-        SELECT * FROM BlockedStickers
+        SELECT * FROM BannedStickers
         """
         return self.execute(sql, fetchall=True)
 
