@@ -110,7 +110,7 @@ async def delete_hamster(message: types.Message, state: FSMContext):
                 data["Sticker Flood"] = 1
             else:
                 data["Sticker Flood"] += 1
-                if data["Sticker Flood"] == 3:
+                if data["Sticker Flood"] >= 3:
                     try:
                         await message.chat.restrict(user_id=message.from_user.id,
                                                     permissions=user_ro,
