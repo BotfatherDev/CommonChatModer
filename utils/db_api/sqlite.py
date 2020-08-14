@@ -45,7 +45,7 @@ class Database:
     def block_sticker(self, set_name: str):
 
         sql = """
-        INSERT INTO BlockedStickers(set_name) VALUE(?)
+        INSERT INTO BlockedStickers(set_name) VALUES(?)
         """
         self.execute(sql, parameters=(set_name,), commit=True)
 
