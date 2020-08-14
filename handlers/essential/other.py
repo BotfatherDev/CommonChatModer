@@ -111,11 +111,14 @@ async def delete_hamster(message: types.Message, state: FSMContext):
             else:
                 data["Sticker Flood"] += 1
                 if data["Sticker Flood"] == 3:
-                    await message.chat.restrict(user_id=message.from_user.id,
-                                                permissions=user_ro,
-                                                until_date=datetime.datetime.now() + datetime.timedelta(
-                                                    minutes=int(10))
-                                                )
+                    try:
+                        await message.chat.restrict(user_id=message.from_user.id,
+                                                    permissions=user_ro,
+                                                    until_date=datetime.datetime.now() + datetime.timedelta(
+                                                        minutes=int(10))
+                                                    )
+                    except Exception as err:
+                        pass
                     await message.answer(f"{message.from_user.get_mention(as_html=True)} забанен на 10 мин "
                                          f"за ебаных хомяков")
 
