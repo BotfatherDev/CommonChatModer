@@ -103,5 +103,5 @@ async def roll(message: types.Message):
 @dp.message_handler(content_types=types.ContentType.STICKER)
 async def delete_hamster(message: types.Message):
     if message.sticker.set_name == "MelieTheCavy":
-        await message.answer("Ща забаню сука.")
+        await message.answer(f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука.")
         await message.delete()
