@@ -104,7 +104,10 @@ async def roll(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.STICKER)
 async def delete_hamster(message: types.Message, state: FSMContext):
+
     if message.sticker.set_name in ["MelieTheCavy", "f_2z5crg9_558038477_by_fStikBot"]:
+        await message.delete()
+
         async with state.proxy() as data:
             if not data.get("Sticker Flood"):
                 data["Sticker Flood"] = 1
@@ -124,4 +127,3 @@ async def delete_hamster(message: types.Message, state: FSMContext):
 
                     return
         await message.answer(f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука.")
-        await message.delete()
