@@ -1,13 +1,15 @@
 """Тут находяться рофлян хендлеры.
 Не воспринимайте их серьезно. Но
 функции полезные, даже очень"""
-
+import datetime
 import re
 from random import randint
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 
+from data.permissions import user_ro
 from loader import dp
 from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
@@ -101,7 +103,22 @@ async def roll(message: types.Message):
 
 
 @dp.message_handler(content_types=types.ContentType.STICKER)
-async def delete_hamster(message: types.Message):
-    if message.sticker.set_name == "MelieTheCavy":
+async def delete_hamster(message: types.Message, state: FSMContext):
+    if message.sticker.set_name in ["MelieTheCavy", "f_2z5crg9_558038477_by_fStikBot"]:
+        async with state.proxy() as data:
+            if not data.get("Sticker Flood"):
+                data["Sticker Flood"] = 1
+            else:
+                data["Sticker Flood"] += 1
+                if data["Sticker Flood"] > 5:
+                    await message.chat.restrict(user_id=message.from_user.id,
+                                                permission=user_ro,
+                                                until_date=datetime.datetime.now() + datetime.timedelta(
+                                                    minutes=int(10))
+                                                )
+                    await message.answer(f"{message.from_user.get_mention(as_html=True)} забанен на 10 мин "
+                                         f"за ебаных хомяков")
+
+                    return
         await message.answer(f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука.")
         await message.delete()
