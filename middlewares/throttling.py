@@ -42,7 +42,10 @@ class ThrottlingMiddleware(BaseMiddleware):
             key = f"{self.prefix}_message"
         delta = throttled.rate - throttled.delta
         if throttled.exceeded_count <= 2:
-            await message.reply('Too many requests! ')
+            service_message = await message.reply('Too many requests! ')
+
+            await asyncio.sleep(5)
+            await service_message.delete()
             await message.delete()
         try:
             await message.delete()

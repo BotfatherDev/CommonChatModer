@@ -98,3 +98,10 @@ async def roll(message: types.Message):
     num = generate_num(parsed.group(2), parsed.group(3))
     # отправляем число
     await message.reply(f"Ваше число: <b>{num}</b>")
+
+
+@dp.message_handler(content_types=types.ContentType.STICKER)
+async def delete_hamster(message: types.Message):
+    if message.sticker.set_name == "MelieTheCavy":
+        await message.answer("Ща забаню сука.")
+        await message.delete()
