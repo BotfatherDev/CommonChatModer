@@ -9,9 +9,11 @@ from aiogram import types
 from aiogram.dispatcher.filters import Command
 
 from loader import dp
+from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
 
 
+@rate_limit(120, "fun")
 @dp.message_handler(Command("gay", prefixes="!/"))
 async def gay(message: types.Message):
     """Хедлер, для обработки комманды /gay или !gay
@@ -37,6 +39,7 @@ async def gay(message: types.Message):
     await message.reply(f"🏳️‍🌈 Похоже, что {target} гей на {percentage}%")
 
 
+@rate_limit(120, "fun")
 @dp.message_handler(Command("biba", prefixes="!/"))
 async def biba(message: types.Message):
     """Хедлер, для обработки комманды /biba или !biba
@@ -70,6 +73,7 @@ async def biba(message: types.Message):
     await message.reply(f"🤤 У {target} биба {length} см")
 
 
+@rate_limit(60, "fun")
 @dp.message_handler(Command("roll", prefixes="!/"))
 async def roll(message: types.Message):
     """Хедлер, для обработки комманды /roll или !roll
