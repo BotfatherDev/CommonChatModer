@@ -43,7 +43,8 @@ class ThrottlingMiddleware(BaseMiddleware):
         delta = throttled.rate - throttled.delta
         if throttled.exceeded_count <= 2:
             await message.reply('Too many requests! ')
-        await asyncio.sleep(delta)
-        thr = await dispatcher.check_key(key)
-        if thr.exceeded_count == throttled.exceeded_count:
-            await message.reply('Unlocked.')
+            await message.delete()
+        try:
+            await message.delete()
+        except Exception as err:
+            pass
