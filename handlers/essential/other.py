@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 
 from data.permissions import user_ro
-from loader import dp
+from loader import dp, db
 from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
 
@@ -104,8 +104,8 @@ async def roll(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.STICKER)
 async def delete_hamster(message: types.Message, state: FSMContext):
-
-    if message.sticker.set_name in ["MelieTheCavy", "f_2z5crg9_558038477_by_fStikBot"]:
+    sticker_sets = [set_name for (set_name,) in db.select_all_sets()]
+    if message.sticker.set_name in sticker_sets:
         await message.delete()
 
         async with state.proxy() as data:

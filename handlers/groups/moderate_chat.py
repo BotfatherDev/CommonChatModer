@@ -9,7 +9,7 @@ from loguru import logger
 
 from data.permissions import user_ro, user_allowed, no_media
 from filters import IsGroup
-from loader import bot, dp
+from loader import bot, dp, db
 
 
 @dp.message_handler(
@@ -192,7 +192,8 @@ async def ban_user(message: types.Message):
         await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
+@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), is_reply=True,
+                    user_can_restrict_members=True)
 async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
@@ -223,7 +224,8 @@ async def unban_user(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["media_false"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
+@dp.message_handler(IsGroup(), Command(commands=["media_false"], prefixes="!/"), is_reply=True,
+                    user_can_restrict_members=True)
 async def media_false_handler(message: types.Message):
     admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
@@ -291,7 +293,23 @@ async def media_false_handler(message: types.Message):
         await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["media_true"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
+@dp.message_handler(IsGroup(), Command(commands=["d"], prefixes="!/"), is_reply=True)
+async def block_sticker(message: types.Message):
+    member = await message.chat.get_member(message.from_user.id)
+    if not member.status == types.ChatMemberStatus.CREATOR:
+        return
+
+    try:
+        set_name = message.reply_to_message.sticker.set_name
+    except Exception:
+        return
+    db.block_sticker(set_name=set_name)
+    await message.reply_to_message.delete()
+    await message.reply("Стикерсет Забанен")
+
+
+@dp.message_handler(IsGroup(), Command(commands=["media_true"], prefixes="!/"), is_reply=True,
+                    user_can_restrict_members=True)
 async def media_true_handler(message: types.Message):
     admin_username = message.from_user.username
     admin_mentioned = message.from_user.get_mention(as_html=True)
