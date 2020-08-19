@@ -123,7 +123,11 @@ async def delete_hamster(message: types.Message, state: FSMContext):
                     except Exception as err:
                         pass
                     await message.answer(f"{message.from_user.get_mention(as_html=True)} забанен на 10 мин "
-                                         f"за ебаных хомяков")
-
+                                         f"за плохие стикеры.")
+                    
+                    data["Sticker Flood"] = 0
+                    
+                    # я обиделся
+                    
                     return
         await message.answer(f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука.")
