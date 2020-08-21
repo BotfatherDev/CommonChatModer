@@ -1,18 +1,18 @@
+from aiogram import executor
 from loguru import logger
 
-from loader import dp, db
+import filters
+import middlewares
 from data.config import SKIP_UPDATES
-
+from handlers import dp
+from loader import db
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
 
 
 async def on_startup(dp):
-    import filters
     filters.setup(dp)
     logger.info("Подключение handlers...")
-    import handlers
-    import middlewares
     middlewares.setup(dp)
 
     await set_default_commands(dp)
@@ -24,7 +24,4 @@ async def on_startup(dp):
     logger.info("Бот запущен")
 
 
-if __name__ == '__main__':
-    from aiogram import executor
-
-    executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES)
+executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES)

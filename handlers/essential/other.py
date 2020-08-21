@@ -15,7 +15,7 @@ from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
 
 
-@rate_limit(120, "fun")
+@rate_limit(120, "gay")
 @dp.message_handler(Command("gay", prefixes="!/"))
 async def gay(message: types.Message):
     """Хедлер, для обработки комманды /gay или !gay
@@ -75,7 +75,7 @@ async def biba(message: types.Message):
     await message.reply(f"🤤 У {target} биба {length} см")
 
 
-@rate_limit(60, "fun")
+@rate_limit(10, "fun")
 @dp.message_handler(Command("roll", prefixes="!/"))
 async def roll(message: types.Message):
     """Хедлер, для обработки комманды /roll или !roll
