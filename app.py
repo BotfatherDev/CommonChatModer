@@ -8,14 +8,13 @@ from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
 import filters
 
+filters.setup(dp)
+import handlers
+import middlewares
+middlewares.setup(dp)
+
 
 async def on_startup(dp):
-    filters.setup(dp)
-
-    import handlers
-    import middlewares
-    middlewares.setup(dp)
-
     await set_default_commands(dp)
     await on_startup_notify(dp)
     try:
