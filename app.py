@@ -25,5 +25,5 @@ async def on_startup(dp):
         print(err)
     logger.info("Бот запущен")
 
-
-executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES)
+if __name__ == '__main__':
+    executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES)
