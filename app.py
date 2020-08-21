@@ -1,8 +1,6 @@
 from aiogram import executor
 from loguru import logger
 
-import filters
-import middlewares
 from data.config import SKIP_UPDATES
 from handlers import dp
 from loader import db
@@ -11,6 +9,9 @@ from utils.set_bot_commands import set_default_commands
 
 
 async def on_startup(dp):
+    import filters
+    import middlewares
+
     filters.setup(dp)
     logger.info("Подключение handlers...")
     middlewares.setup(dp)
