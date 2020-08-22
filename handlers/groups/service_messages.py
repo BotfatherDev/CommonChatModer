@@ -27,6 +27,8 @@ async def left_chat_member(message: types.Message):
     # Проверяем вышел ли пользователь сам
     if message.left_chat_member.id == message.from_user.id:
         await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} вышел из чата.")
+        until_date = datetime.datetime.now() + datetime.timedelta(days=1)
+        await message.chat.kick(user_id=message.from_user.id, until_date=until_date)
 
     else:
         await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} был удален из чата "
@@ -53,13 +55,17 @@ async def new_chat_member(message: types.Message):
     
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
-        await message.reply(
-            (
-                f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
-                "Подтверди, что ты не бот, нажатием на кнопку ниже"
-            ),
-            reply_markup=generate_confirm_markup(new_member.id)
-        )
+        chat_member = await message.chat.get_member(new_member.id)
+        if chat_member.status == "restricted":
+            return
+        else:
+            await message.reply(
+                (
+                    f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
+                    "Подтверди, что ты не бот, нажатием на кнопку ниже"
+                ),
+                reply_markup=generate_confirm_markup(new_member.id)
+            )
 
 
 @dp.callback_query_handler(user_callback.filter())
