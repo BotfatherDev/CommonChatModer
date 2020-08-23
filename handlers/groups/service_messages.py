@@ -88,8 +88,8 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
         text = str(
             f"Вопросов больше нет, {query.from_user.get_mention(as_html=True)}, проходите\n"
             "Не забудьте ознакомиться с описанием чата.\n\n"
-            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу скидывайте пруф, "
-            "что вы приобрели курс <a href='http://t.me/latand'>Косте</a>"
+            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу, "
+            "Зарегистрируйтесь в боте @UdemyStudentsbot и он предоставит доступ"
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
 
@@ -99,8 +99,8 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
             f"{query.from_user.get_mention(as_html=True)}, пробегай. Эти кожаные мешки заставляют меня работать!\n"
             "Подтягивай наших, надерём им их кожаные жопы!\n"
             "И да, братан, у них какая-то полезная инфа в описании чата, нужно проверить\n\n"
-            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу скидывайте пруф, "
-            "что вы приобрели курс <a href='http://t.me/latand'>Косте</a>"
+            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу, "
+            "Зарегистрируйтесь в боте @UdemyStudentsbot и он предоставит доступ"
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
 
