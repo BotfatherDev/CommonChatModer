@@ -55,17 +55,13 @@ async def new_chat_member(message: types.Message):
     
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
-        chat_member = await message.chat.get_member(new_member.id)
-        if chat_member.status == "restricted":
-            return
-        else:
-            await message.reply(
-                (
-                    f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
-                    "Подтверди, что ты не бот, нажатием на кнопку ниже"
-                ),
-                reply_markup=generate_confirm_markup(new_member.id)
-            )
+        await message.reply(
+            (
+                f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
+                "Подтверди, что ты не бот, нажатием на кнопку ниже"
+            ),
+            reply_markup=generate_confirm_markup(new_member.id)
+        )
 
 
 @dp.callback_query_handler(user_callback.filter())
