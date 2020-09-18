@@ -55,17 +55,13 @@ async def new_chat_member(message: types.Message):
     
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
-        chat_member = await message.chat.get_member(new_member.id)
-        if chat_member.status == "restricted":
-            return
-        else:
-            await message.reply(
-                (
-                    f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
-                    "Подтверди, что ты не бот, нажатием на кнопку ниже"
-                ),
-                reply_markup=generate_confirm_markup(new_member.id)
-            )
+        await message.reply(
+            (
+                f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
+                "Подтверди, что ты не бот, нажатием на кнопку ниже"
+            ),
+            reply_markup=generate_confirm_markup(new_member.id)
+        )
 
 
 @dp.callback_query_handler(user_callback.filter())
@@ -92,8 +88,8 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
         text = str(
             f"Вопросов больше нет, {query.from_user.get_mention(as_html=True)}, проходите\n"
             "Не забудьте ознакомиться с описанием чата.\n\n"
-            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу скидывайте пруф, "
-            "что вы приобрели курс <a href='http://t.me/latand'>Косте</a>"
+            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу, "
+            "Зарегистрируйтесь в боте @UdemyStudentsbot и он предоставит доступ"
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
 
@@ -103,8 +99,8 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
             f"{query.from_user.get_mention(as_html=True)}, пробегай. Эти кожаные мешки заставляют меня работать!\n"
             "Подтягивай наших, надерём им их кожаные жопы!\n"
             "И да, братан, у них какая-то полезная инфа в описании чата, нужно проверить\n\n"
-            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу скидывайте пруф, "
-            "что вы приобрели курс <a href='http://t.me/latand'>Косте</a>"
+            "Если вы пришли с курса на Udemy и хотите получить доступ к гитхабу, "
+            "Зарегистрируйтесь в боте @UdemyStudentsbot и он предоставит доступ"
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
 
