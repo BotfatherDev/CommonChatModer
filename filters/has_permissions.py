@@ -1,8 +1,10 @@
+import logging
 import typing
 from dataclasses import dataclass
 
+import loguru
 from aiogram import types
-from aiogram.dispatcher.filters import Filter
+from aiogram.dispatcher.filters import Filter, BoundFilter
 
 
 @dataclass
@@ -89,6 +91,7 @@ class HasPermissions(Filter):
             target_user_id = await self.get_target_id(message)
             try:
                 chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
+
             except StopIteration:
                 return False
             self._set_cached_value(message, chat_member)
@@ -106,9 +109,12 @@ class HasPermissions(Filter):
             return False
         if chat_member.status == types.ChatMemberStatus.CREATOR:
             return chat_member
+
         for permission, value in self.required_permissions.items():
+
             if not getattr(chat_member, permission):
                 return False
+        return True
 
     async def get_target_id(self, message: types.Message) -> int:
         """
