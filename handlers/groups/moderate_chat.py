@@ -71,10 +71,6 @@ async def read_only_mode(message: types.Message):
             f"Пользователю @{member_username} запрещено писать сообщения до {until_date} админом @{admin_username}"
         )
 
-        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
-        await asyncio.sleep(5)
-        await message.reply_to_message.delete()
-
     # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest:
         # Отправляем сообщение
@@ -82,22 +78,13 @@ async def read_only_mode(message: types.Message):
             f"Пользователь {member_mentioned} "
             "является администратором чата, я не могу выдать ему RO"
         )
-
-        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
-
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог замутить пользователя @{member_username}")
-
-        # Опять ждём перед выполнением следующего блока
-        await asyncio.sleep(5)
-
-    # В случае любой другой ошибки, пишем её в лог, для последующего деббага
-    except Exception as err:
-        logger.exception(err)
-    finally:
-        # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
-        await message.delete()
-        await service_message.delete()
+    service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
+    await asyncio.sleep(5)
+    # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
+    await message.delete()
+    await service_message.delete()
 
 
 @dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
@@ -150,7 +137,6 @@ async def ban_user(message: types.Message):
     try:
         # Пытаемся удалить пользователя из чата
         await message.chat.kick(user_id=member_id)
-
         # Информируем об этом
         await message.answer(
             f"Пользователь {member_mentioned} был успешно забанен администратором {admin_mentioned}"
@@ -159,15 +145,6 @@ async def ban_user(message: types.Message):
         logger.info(
             f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
         )
-        service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
-
-        # После чего засыпаем на 5 секунд
-        await asyncio.sleep(5)
-
-        # Не забываем удалить сообщение, на которое ссылался администратор
-        await message.reply_to_message.delete()
-
-    # Если бот не может забанить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest:
 
         # Отправляем сообщение
@@ -176,21 +153,16 @@ async def ban_user(message: types.Message):
             "является администратором чата, я не могу выдать ему RO"
         )
 
-        service_message = await message.answer(f"Сообщение самоуничтожится через 5 секунд.", reply=False)
-
-        # Вносим информацию о бане в лог
         logger.info(f"Бот не смог забанить пользователя {member_fullname}")
 
-        # После чего засыпаем на 5 секунд
-        await asyncio.sleep(5)
-        await service_message.delete()
+    service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
 
-    # В случае любой другой ошибки, пишем её в лог, для последующего деббага
-    except Exception as err:
-        logger.exception(err)
-    finally:
-        # В итоге удаляем сообщения
-        await message.delete()
+    # После чего засыпаем на 5 секунд
+    await asyncio.sleep(5)
+    # Не забываем удалить сообщение, на которое ссылался администратор
+    await message.reply_to_message.delete()
+    await message.delete()
+    await service_message.delete()
 
 
 @dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), is_reply=True,
@@ -252,49 +224,37 @@ async def media_false_handler(message: types.Message):
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
     member = await message.chat.get_member(member_id)
 
+    # Пытаемся забрать права у пользователя
+    new_permissions = set_no_media_permissions(member)
     try:
-        # Пытаемся забрать права у пользователя
-        new_permissions = set_no_media_permissions(member)
         await message.chat.restrict(
             user_id=member_id,
             permissions=new_permissions,
             until_date=until_date)
-
-        # Отправляем сообщение
-        await message.answer(text=answer_text)
-
         # Вносим информацию о муте в лог
         logger.info(
             f"Пользователю @{member_username} запрещено использовать медиаконтент до {until_date} "
             f"админом @{admin_username}"
         )
-
-        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
-        await asyncio.sleep(5)
-        await message.reply_to_message.delete()
-
     # Если бот не может изменить права пользователя (администратора),
     # возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest as err:
-
         # Отправляем сообщение
         await message.answer(
             f"Пользователь {member_mentioned} "
             "является администратором чата, изменить его права"
         )
 
-        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
-
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог забрать права у пользователя @{member_username}")
 
-        # Опять ждём перед выполнением следующего блока
-        await asyncio.sleep(5)
-        await service_message.delete()
-
-    finally:
-        # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
-        await message.delete()
+    # Отправляем сообщение
+    await message.answer(text=answer_text)
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
+    await asyncio.sleep(5)
+    await message.reply_to_message.delete()
+    await message.delete()
+    await service_message.delete()
 
 
 @dp.message_handler(IsGroup(), Command(commands=["d"], prefixes="!/"), is_reply=True)
@@ -338,9 +298,6 @@ async def media_true_handler(message: types.Message):
             f"Пользователь @{member_username} благодаря @{admin_username} может снова использовать медиаконтент"
         )
 
-        service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
-        await asyncio.sleep(5)
-        await message.reply_to_message.delete()
         # Если бот не может забрать права пользователя (администратора),
         # возникает ошибка BadRequest которую мы обрабатываем
     except BadRequest:
@@ -350,14 +307,12 @@ async def media_true_handler(message: types.Message):
             f"Пользователь {member_mentioned} "
             "является администратором чата, изменить его права"
         )
-
-        service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
-
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог вернуть права пользователю @{member_username}")
 
-        await asyncio.sleep(5)
-    finally:
-        # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
-        await message.delete()
-        await service_message.delete()
+    service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
+    await asyncio.sleep(5)
+    await message.delete()
+    await service_message.delete()
+    await message.reply_to_message.delete()
+
