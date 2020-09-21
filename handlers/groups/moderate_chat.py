@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
-from data.permissions import user_ro, user_allowed, no_media
+from data.permissions import set_user_ro_permissions, set_new_user_approved_permissions, set_no_media_permissions
 from filters import IsGroup
 from loader import bot, dp, db
 
@@ -50,13 +50,13 @@ async def read_only_mode(message: types.Message):
         reason = f"по причине: {reason}"
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
-
+    member = await message.chat.get_member(member_id)
     try:
 
         # Пытаемся забрать права у пользователя
         await message.chat.restrict(
             user_id=member_id,
-            permissions=user_ro,
+            permissions=set_user_ro_permissions(member),
             until_date=until_date,
         )
 
@@ -111,12 +111,13 @@ async def undo_read_only_mode(message: types.Message):
     member_id = message.reply_to_message.from_user.id
     member_username = message.reply_to_message.from_user.username
     member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+    member = await message.chat.get_member(member_id)
 
     # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=member_id,
-        permissions=user_allowed,
+        permissions=set_new_user_approved_permissions(member),
     )
 
     # Информируем об этом
@@ -182,6 +183,7 @@ async def ban_user(message: types.Message):
 
         # После чего засыпаем на 5 секунд
         await asyncio.sleep(5)
+        await service_message.delete()
 
     # В случае любой другой ошибки, пишем её в лог, для последующего деббага
     except Exception as err:
@@ -189,7 +191,6 @@ async def ban_user(message: types.Message):
     finally:
         # В итоге удаляем сообщения
         await message.delete()
-        await service_message.delete()
 
 
 @dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), is_reply=True,
@@ -237,7 +238,7 @@ async def media_false_handler(message: types.Message):
     parsed = command_parse.match(message.text)
     time = parsed.group(2)
 
-    answer_text = f"Пользователю {member_mentioned} было был лишён права использовать медиаконтент "
+    answer_text = f"Пользователь {member_mentioned} было был лишён права использовать медиаконтент "
     if time:
         answer_text += f'на {time} минут\n'
     answer_text += f"администратором {admin_mentioned}"
@@ -249,12 +250,14 @@ async def media_false_handler(message: types.Message):
 
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
+    member = await message.chat.get_member(member_id)
 
     try:
         # Пытаемся забрать права у пользователя
+        new_permissions = set_no_media_permissions(member)
         await message.chat.restrict(
             user_id=member_id,
-            permissions=no_media,
+            permissions=new_permissions,
             until_date=until_date)
 
         # Отправляем сообщение
@@ -272,7 +275,7 @@ async def media_false_handler(message: types.Message):
 
     # Если бот не может изменить права пользователя (администратора),
     # возникает ошибка BadRequest которую мы обрабатываем
-    except BadRequest:
+    except BadRequest as err:
 
         # Отправляем сообщение
         await message.answer(
@@ -287,10 +290,11 @@ async def media_false_handler(message: types.Message):
 
         # Опять ждём перед выполнением следующего блока
         await asyncio.sleep(5)
+        await service_message.delete()
+
     finally:
         # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
         await message.delete()
-        await service_message.delete()
 
 
 @dp.message_handler(IsGroup(), Command(commands=["d"], prefixes="!/"), is_reply=True)
@@ -317,13 +321,14 @@ async def media_true_handler(message: types.Message):
     member_id = message.reply_to_message.from_user.id
     member_username = message.reply_to_message.from_user.username
     member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+    member = await message.chat.get_member(member_id)
 
     try:
         # Возвращаем пользователю возможность отправлять медиаконтент
         await bot.restrict_chat_member(
             chat_id=chat_id,
             user_id=member_id,
-            permissions=user_allowed,
+            permissions=set_new_user_approved_permissions(member),
         )
 
         # Информируем об этом

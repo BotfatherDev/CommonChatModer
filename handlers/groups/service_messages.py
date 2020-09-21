@@ -1,9 +1,9 @@
-
 import datetime
 
 from aiogram import types
+from loguru import logger
 
-from data.permissions import new_user_added, user_allowed
+from data.permissions import set_new_user_permissions, set_new_user_approved_permissions
 from filters import IsGroup
 from keyboards.inline import generate_confirm_markup, user_callback, source_markup
 from loader import bot
@@ -44,17 +44,15 @@ async def new_chat_member(message: types.Message):
     if message.date < datetime.datetime.now() - datetime.timedelta(minutes=1):
         return False
 
-    # сразу выдаём ему права, неподтверждённого пользователя
-    await bot.restrict_chat_member(
-        chat_id=message.chat.id,
-        user_id=message.new_chat_members[0].id,
-        permissions=new_user_added,
-    )
-
     # TODO вместо кучи сообщений, отправлять одно с несколькими айдишниками
-    
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
+        member = await message.chat.get_member(new_member.id)
+        await bot.restrict_chat_member(
+            chat_id=message.chat.id,
+            user_id=new_member.id,
+            permissions=set_new_user_permissions(member),
+        )
         await message.reply(
             (
                 f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
@@ -80,7 +78,6 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
 
     # если на кнопку нажал не только что вошедший пользователь, убираем у него часики и игнорируем (выходим из функции).
     if query.from_user.id != user_id:
-        await query.answer()
         return
 
     # далее, если пользователь выбрал кнопку "человек" сообщаем ему об этом
@@ -103,16 +100,13 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
             "Зарегистрируйтесь в боте @UdemyStudentsbot и он предоставит доступ"
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
-
+    await query.message.delete()
     # не забываем выдать юзеру необходимые права
+    member = await query.message.chat.get_member(user_id)
+
+    new_permissions = set_new_user_approved_permissions(member)
     await bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=user_id,
-        permissions=user_allowed,
+        permissions=new_permissions,
     )
-
-    # и убираем часики
-    await query.answer()
-
-    # а также удаляем сообщение, чтобы пользователь в RO не мог получить права
-    await query.message.delete()

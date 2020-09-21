@@ -9,7 +9,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 
-from data.permissions import user_ro
+from data.permissions import set_user_ro_permissions
 from loader import dp, db
 from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
@@ -115,8 +115,9 @@ async def delete_hamster(message: types.Message, state: FSMContext):
                 data["Sticker Flood"] += 1
                 if data["Sticker Flood"] >= 3:
                     try:
+                        member = await message.chat.get_member(message.from_user.id)
                         await message.chat.restrict(user_id=message.from_user.id,
-                                                    permissions=user_ro,
+                                                    permissions=set_user_ro_permissions(member),
                                                     until_date=datetime.datetime.now() + datetime.timedelta(
                                                         minutes=int(10))
                                                     )
