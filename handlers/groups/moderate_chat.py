@@ -51,12 +51,15 @@ async def read_only_mode(message: types.Message):
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
     member = await message.chat.get_member(member_id)
+    chat = await bot.get_chat(message.chat.id)
+    default_permissions = chat.permissions.permissions
+
     try:
 
         # Пытаемся забрать права у пользователя
         await message.chat.restrict(
             user_id=member_id,
-            permissions=set_user_ro_permissions(member),
+            permissions=set_user_ro_permissions(member, default_permissions),
             until_date=until_date,
         )
 
@@ -99,12 +102,14 @@ async def undo_read_only_mode(message: types.Message):
     member_username = message.reply_to_message.from_user.username
     member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
     member = await message.chat.get_member(member_id)
+    chat = await bot.get_chat(message.chat.id)
+    default_permissions = chat.permissions.permissions
 
     # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=member_id,
-        permissions=set_new_user_approved_permissions(member),
+        permissions=set_new_user_approved_permissions(member, default_permissions),
     )
 
     # Информируем об этом
@@ -218,15 +223,18 @@ async def media_false_handler(message: types.Message):
     # Проверяем на наличие и корректность срока media_false
     if not time:
         # мение 30 секунд -- навсегда (время в минутах)
-        time = 0.1
+        time = 50000
 
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
     member = await message.chat.get_member(member_id)
+    chat = await bot.get_chat(message.chat.id)
+    default_permissions = chat.permissions
 
     # Пытаемся забрать права у пользователя
-    new_permissions = set_no_media_permissions(member)
+    new_permissions = set_no_media_permissions(member, default_permissions)
     try:
+        logger.info(f"{new_permissions.__dict__}")
         await message.chat.restrict(
             user_id=member_id,
             permissions=new_permissions,
@@ -282,13 +290,15 @@ async def media_true_handler(message: types.Message):
     member_username = message.reply_to_message.from_user.username
     member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
     member = await message.chat.get_member(member_id)
+    chat = await bot.get_chat(message.chat.id)
+    default_permissions = chat.permissions.permissions
 
     try:
         # Возвращаем пользователю возможность отправлять медиаконтент
         await bot.restrict_chat_member(
             chat_id=chat_id,
             user_id=member_id,
-            permissions=set_new_user_approved_permissions(member),
+            permissions=set_new_user_approved_permissions(member, default_permissions),
         )
 
         # Информируем об этом
@@ -315,4 +325,3 @@ async def media_true_handler(message: types.Message):
     await message.delete()
     await service_message.delete()
     await message.reply_to_message.delete()
-

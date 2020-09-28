@@ -48,10 +48,12 @@ async def new_chat_member(message: types.Message):
     # Каждому пользователю отсылаем кнопку
     for new_member in message.new_chat_members:
         member = await message.chat.get_member(new_member.id)
+        chat = await bot.get_chat(message.chat.id)
+        default_permissions = chat.permissions.permissions
         await bot.restrict_chat_member(
             chat_id=message.chat.id,
             user_id=new_member.id,
-            permissions=set_new_user_permissions(member),
+            permissions=set_new_user_permissions(member, default_permissions),
         )
         await message.reply(
             (
@@ -103,8 +105,10 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
     await query.message.delete()
     # не забываем выдать юзеру необходимые права
     member = await query.message.chat.get_member(user_id)
+    chat = await bot.get_chat(query.message.chat.id)
+    default_permissions = chat.permissions.chat.permissions
 
-    new_permissions = set_new_user_approved_permissions(member)
+    new_permissions = set_new_user_approved_permissions(member, default_permissions)
     await bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=user_id,

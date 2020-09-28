@@ -116,8 +116,11 @@ async def delete_hamster(message: types.Message, state: FSMContext):
                 if data["Sticker Flood"] >= 3:
                     try:
                         member = await message.chat.get_member(message.from_user.id)
+                        chat = await message.bot.get_chat(message.chat.id)
+                        default_permissions = chat.permissions
+
                         await message.chat.restrict(user_id=message.from_user.id,
-                                                    permissions=set_user_ro_permissions(member),
+                                                    permissions=set_user_ro_permissions(member, default_permissions),
                                                     until_date=datetime.datetime.now() + datetime.timedelta(
                                                         minutes=int(10))
                                                     )
