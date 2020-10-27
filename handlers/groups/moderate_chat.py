@@ -25,12 +25,7 @@ async def read_only_mode(message: types.Message):
     используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
 
     # Создаем переменные для удобства
-    admin_username = message.from_user.username
-    admin_mentioned = message.from_user.get_mention(as_html=True)
-
-    member_id = message.reply_to_message.from_user.id
-    member_username = message.reply_to_message.from_user.username
-    member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
 
     # Разбиваем команду на аргументы с помощью RegExp
     command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?")
@@ -50,16 +45,12 @@ async def read_only_mode(message: types.Message):
         reason = f"по причине: {reason}"
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
-    member = await message.chat.get_member(member_id)
-    chat = await bot.get_chat(message.chat.id)
-    default_permissions = chat.permissions.permissions
 
     try:
-
         # Пытаемся забрать права у пользователя
         await message.chat.restrict(
             user_id=member_id,
-            permissions=set_user_ro_permissions(member, default_permissions),
+            permissions=set_user_ro_permissions(),
             until_date=until_date,
         )
 
@@ -88,28 +79,19 @@ async def read_only_mode(message: types.Message):
     # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
     await message.delete()
     await service_message.delete()
+    await message.reply_to_message.delete()
 
 
 @dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
 async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
-
-    # Создаем переменные для удобства
-    admin_username = message.from_user.username
-    admin_mentioned = message.from_user.get_mention(as_html=True)
-    chat_id = message.chat.id
-    member_id = message.reply_to_message.from_user.id
-    member_username = message.reply_to_message.from_user.username
-    member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
-    member = await message.chat.get_member(member_id)
-    chat = await bot.get_chat(message.chat.id)
-    default_permissions = chat.permissions.permissions
+    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
 
     # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
         chat_id=chat_id,
         user_id=member_id,
-        permissions=set_new_user_approved_permissions(member, default_permissions),
+        permissions=set_new_user_approved_permissions(),
     )
 
     # Информируем об этом
@@ -205,11 +187,7 @@ async def unban_user(message: types.Message):
 @dp.message_handler(IsGroup(), Command(commands=["media_false"], prefixes="!/"), is_reply=True,
                     user_can_restrict_members=True)
 async def media_false_handler(message: types.Message):
-    admin_username = message.from_user.username
-    admin_mentioned = message.from_user.get_mention(as_html=True)
-    member_id = message.reply_to_message.from_user.id
-    member_username = message.reply_to_message.from_user.username
-    member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
 
     command_parse = re.compile(r"(!media_false|/media_false) ?(\d+)?")
     parsed = command_parse.match(message.text)
@@ -227,12 +205,9 @@ async def media_false_handler(message: types.Message):
 
     # Получаем конечную дату, до которой нужно замутить
     until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
-    member = await message.chat.get_member(member_id)
-    chat = await bot.get_chat(message.chat.id)
-    default_permissions = chat.permissions
 
     # Пытаемся забрать права у пользователя
-    new_permissions = set_no_media_permissions(member, default_permissions)
+    new_permissions = set_no_media_permissions()
     try:
         logger.info(f"{new_permissions.__dict__}")
         await message.chat.restrict(
@@ -283,22 +258,14 @@ async def block_sticker(message: types.Message):
 @dp.message_handler(IsGroup(), Command(commands=["media_true"], prefixes="!/"), is_reply=True,
                     user_can_restrict_members=True)
 async def media_true_handler(message: types.Message):
-    admin_username = message.from_user.username
-    admin_mentioned = message.from_user.get_mention(as_html=True)
-    chat_id = message.chat.id
-    member_id = message.reply_to_message.from_user.id
-    member_username = message.reply_to_message.from_user.username
-    member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
-    member = await message.chat.get_member(member_id)
-    chat = await bot.get_chat(message.chat.id)
-    default_permissions = chat.permissions.permissions
+    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
 
     try:
         # Возвращаем пользователю возможность отправлять медиаконтент
         await bot.restrict_chat_member(
             chat_id=chat_id,
             user_id=member_id,
-            permissions=set_new_user_approved_permissions(member, default_permissions),
+            permissions=set_new_user_approved_permissions(),
         )
 
         # Информируем об этом
@@ -325,3 +292,15 @@ async def media_true_handler(message: types.Message):
     await message.delete()
     await service_message.delete()
     await message.reply_to_message.delete()
+
+
+def get_members_info(message: types.Message):
+    # Создаем переменные для удобства
+    return [
+        message.from_user.username,
+        message.from_user.get_mention(as_html=True),
+        message.chat.id,
+        message.reply_to_message.from_user.id,
+        message.reply_to_message.from_user.username,
+        message.reply_to_message.from_user.get_mention(as_html=True)
+    ]

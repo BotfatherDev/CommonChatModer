@@ -4,7 +4,6 @@ services:
     container_name: commonmoder
     build:
       context: .
-    network_mode: "host"
 
     command: python app.py
     restart: always
