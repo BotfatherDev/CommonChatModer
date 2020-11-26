@@ -1,3 +1,10 @@
+"""TODO
+1. В функцию cancel добавить emoji
+2. После каждого вопроса предлагать пользователю досрочно завершить процесс
+3. Перевести проверку корректности введенных текстовых значений в middleware
+"""
+
+
 import logging
 
 from aiogram import types
@@ -8,8 +15,8 @@ from aiogram.types import CallbackQuery, ContentType
 from keyboards.inline.metabolism import metabolism_gender_markup, metabolism_activity_markup
 from loader import dp
 
-# Сделаем фильтр на комманду /metabolism, где не будет указано никакого состояния
 from states.metabolism import Metabolism
+from utils.misc import metabolism_calculation
 
 
 @dp.message_handler(Command("metabolism"), state=None)
@@ -30,54 +37,47 @@ async def answer_gender(call: CallbackQuery, state: FSMContext):
     await state.update_data(gender=call.data)
 
     await call.message.answer(f"{call.data}")
-    await call.message.answer(f"Ваш вес, кг?",
-                              reply_markup=None)
+    await call.message.answer(f"Ваш вес, кг?")
     await Metabolism.weight.set()
 
 
 @dp.message_handler(content_types=ContentType.TEXT, state=Metabolism.weight)
-async def answer_gender(message: types.Message, state: FSMContext):
+async def answer_weight(message: types.Message, state: FSMContext):
     answer = message.text
 
     if answer.isdigit():
         await state.update_data(weight=int(answer))
     else:
-        await message.answer("Нужно ввести число !!!"),
+        await message.answer("Нужно ввести число !!!")
+        return
 
-    await message.answer("Ваш рост, см?",
-                         reply_markup=None)
+    await message.answer("Ваш рост, см?")
     await Metabolism.height.set()
 
 
 @dp.message_handler(content_types=ContentType.TEXT, state=Metabolism.height)
-async def answer_gender(message: types.Message, state: FSMContext):
+async def answer_height(message: types.Message, state: FSMContext):
     answer = message.text
 
     if answer.isdigit():
         await state.update_data(height=int(answer))
     else:
-        await message.answer("Нужно ввести число !!!"),
+        await message.answer("Нужно ввести число !!!")
+        return
 
-    await message.answer("Ваш возраст, полных лет?",
-                         reply_markup=None)
+    await message.answer("Ваш возраст, полных лет?")
     await Metabolism.age.set()
 
 
 @dp.message_handler(content_types=ContentType.TEXT, state=Metabolism.age)
-async def answer_gender(message: types.Message, state: FSMContext):
+async def answer_age(message: types.Message, state: FSMContext):
     answer = message.text
 
     if answer.isdigit():
         await state.update_data(age=int(answer))
     else:
-        await message.answer("Нужно ввести число !!!"),
-
-    # Достаем переменные
-    data = await state.get_data()
-    gender = data.get("gender")  # пол мужской/женский
-    age = data.get("age")  # возраст, полных лет
-    height = data.get("height")  # рост, см
-    weight = data.get("weight")  # вес, кг
+        await message.answer("Нужно ввести число !!!")
+        return
 
     await message.answer("Уровень вашей активности?",
                          reply_markup=metabolism_activity_markup)
@@ -86,18 +86,24 @@ async def answer_gender(message: types.Message, state: FSMContext):
 
 @dp.message_handler(state=Metabolism.activity)
 @dp.callback_query_handler()
-async def answer_gender(call: CallbackQuery, state: FSMContext):
+async def answer_activity(call: CallbackQuery, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
     await call.answer(text=f"Коэффициент вашей активности {call.data}", cache_time=60)
 
-    await state.update_data(activity=int(call.data))
+    await state.update_data(activity=float(call.data))
 
-    # await message.answer(f"Ваши данные: "
-    #                      f"пол {gender}, "
-    #                      f"возраст {age} лет, "
-    #                      f"{height} см рост, "
-    #                      f"{weight} кг вес"
-    #                      )
+    # Достаем переменные
+    data = await state.get_data()
+    gender = data.get("gender")  # пол мужской/женский
+    age = data.get("age")  # возраст, полных лет
+    height = data.get("height")  # рост, см
+    weight = data.get("weight")  # вес, кг
+    activity = data.get("activity")  # коэффициент уровня активности
+
+    result = metabolism_calculation(gender=gender, age=age, height=height, weight=weight, activity=activity)
+    print(result)
+
+    await call.message.answer(f"Уровень вашего метаболизма - {result} ККал \n\n")
 
     await state.finish()
 
