@@ -7,3 +7,4 @@ class Metabolism(StatesGroup):
     age = State()  # возраст, полных лет
     height = State()  # рост, см
     weight = State()  # вес, кг
+    activity = State()  # коэффициент уровня активности
