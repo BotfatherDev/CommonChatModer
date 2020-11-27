@@ -1,10 +1,12 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
 
+gender_callback = CallbackData("gender", "description", "value")
+
 metabolism_gender_markup = InlineKeyboardMarkup(inline_keyboard=[
     [
-        InlineKeyboardButton(text="Мужской", callback_data="male"),
-        InlineKeyboardButton(text="Женский", callback_data="female")
+        InlineKeyboardButton(text="Мужской", callback_data=gender_callback.new(description="мужчина", value="male")),
+        InlineKeyboardButton(text="Женский", callback_data=gender_callback.new(description="женщина", value="female"))
     ],
     [
         InlineKeyboardButton(text="Отмена", callback_data="cancel")
@@ -22,7 +24,7 @@ activities = list()
 activities.append(
     InlineKeyboardButton(text="Физическая нагрузка отсутсвует или минимальная",
                          callback_data=activity_callback.new(
-                             description="Физическая нагрузка отсутсвует или минимальная",
+                             description="нагрузка минимальная",
                              coefficient=1.2)
                          )
 )
@@ -30,7 +32,7 @@ activities.append(
 activities.append(
     InlineKeyboardButton(text="Тренировки средней тяжести 3 раза в неделю",
                          callback_data=activity_callback.new(
-                             description="Тренировки средней тяжести 3 раза в неделю",
+                             description="3 раза в неделю",
                              coefficient=1.38)
                          )
 )
@@ -38,15 +40,15 @@ activities.append(
 activities.append(
     InlineKeyboardButton(text="Тренировки средней тяжести 5 раз в неделю",
                          callback_data=activity_callback.new(
-                             description="Тренировки средней тяжести 5 раз в неделю",
+                             description="5 раз в неделю",
                              coefficient=1.46)
                          )
 )
 
 activities.append(
-    InlineKeyboardButton(text="Интенсивные тренировки 5 раз в неделю",
+    InlineKeyboardButton(text="Интенсивные 5 раз в неделю",
                          callback_data=activity_callback.new(
-                             description="Интенсивные тренировки 5 раз в неделю",
+                             description="Интенсивно 5 раз в неделю",
                              coefficient=1.55)
                          )
 )
@@ -54,7 +56,7 @@ activities.append(
 activities.append(
     InlineKeyboardButton(text="Тренировки каждый день",
                          callback_data=activity_callback.new(
-                             description="Тренировки каждый день",
+                             description="каждый день",
                              coefficient=1.64)
                          )
 )
@@ -62,7 +64,7 @@ activities.append(
 activities.append(
     InlineKeyboardButton(text="Интенсивные тренировки каждый день или 2 раза в день",
                          callback_data=activity_callback.new(
-                             description="Интенсивные тренировки каждый день или 2 раза в день",
+                             description="интенсивно каждый день",
                              coefficient=1.73)
                          )
 )

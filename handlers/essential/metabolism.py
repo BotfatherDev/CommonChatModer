@@ -1,12 +1,11 @@
 """TODO
-1. В функцию cancel добавить emoji
++ 1. В функцию cancel добавить emoji
 2. После каждого вопроса предлагать пользователю досрочно завершить процесс
 3. Перевести проверку корректности введенных текстовых значений в middleware
-4. Вывести пользователю информацию о выбранном поле
-5. Вывести пользователю информацию о выбранном уровне активности
++ 4. Вывести пользователю информацию о выбранном поле
++ 5. Вывести пользователю информацию о выбранном уровне активности
 6. Протестировать дробные числа при указании роста, веса, возраста
 """
-
 
 import logging
 
@@ -14,8 +13,10 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from aiogram.types import CallbackQuery, ContentType
+from emoji import emojize
 
-from keyboards.inline.metabolism import metabolism_gender_markup, metabolism_activity_markup
+from keyboards.inline.metabolism import metabolism_gender_markup, metabolism_activity_markup, activity_callback, \
+    gender_callback
 from loader import dp
 
 from states.metabolism import Metabolism
@@ -32,14 +33,17 @@ async def enter_test(message: types.Message):
 
 
 @dp.message_handler(state=Metabolism.gender)
-@dp.callback_query_handler(text_contains="male" or "female")
-async def answer_gender(call: CallbackQuery, state: FSMContext):
+@dp.callback_query_handler(gender_callback.filter())
+async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
-    await call.answer(text=call.data, cache_time=60)
+    await call.answer(cache_time=60)
 
-    await state.update_data(gender=call.data)
+    gender = callback_data.get("value")
+    await state.update_data(gender=gender)
 
-    await call.message.answer(f"{call.data}")
+    description = callback_data.get("description")
+    await call.message.answer(f"{description}")
+
     await call.message.answer(f"Ваш вес, кг?")
     await Metabolism.weight.set()
 
@@ -88,12 +92,16 @@ async def answer_age(message: types.Message, state: FSMContext):
 
 
 @dp.message_handler(state=Metabolism.activity)
-@dp.callback_query_handler()
-async def answer_activity(call: CallbackQuery, state: FSMContext):
+@dp.callback_query_handler(activity_callback.filter())
+async def answer_activity(call: CallbackQuery, callback_data: dict, state: FSMContext):
+    await call.answer(cache_time=60)
     await call.message.edit_reply_markup(reply_markup=None)
-    await call.answer(text=f"Коэффициент вашей активности {call.data}", cache_time=60)
 
-    await state.update_data(activity=float(call.data))
+    coefficient = callback_data.get("coefficient")
+    await state.update_data(activity=float(coefficient))
+
+    description = callback_data.get("description")
+    await call.message.answer(text=f"{description}\n\n")
 
     # Достаем переменные
     data = await state.get_data()
@@ -104,9 +112,8 @@ async def answer_activity(call: CallbackQuery, state: FSMContext):
     activity = data.get("activity")  # коэффициент уровня активности
 
     result = metabolism_calculation(gender=gender, age=age, height=height, weight=weight, activity=activity)
-    print(result)
 
-    await call.message.answer(f"Уровень вашего метаболизма - {result} ККал \n\n")
+    await call.message.answer(f"УРОВЕНЬ ВАШЕГО МЕТАБОЛИЗМА - {result} ККал \n\n")
 
     await state.finish()
 
@@ -114,7 +121,7 @@ async def answer_activity(call: CallbackQuery, state: FSMContext):
 @dp.callback_query_handler(text="cancel")
 async def cancel_buying(call: CallbackQuery, state: FSMContext):
     # Ответим в окошке с уведомлением!
-    await call.answer("Вы не узнаете много нового о себе ((((", show_alert=True)
+    await call.answer(f"Вы не узнаете много нового о себе {emojize(':thinking_face:')}", show_alert=True)
 
     # Отправляем пустую клавиатуру изменяя сообщение
     await call.message.edit_reply_markup(reply_markup=None)
