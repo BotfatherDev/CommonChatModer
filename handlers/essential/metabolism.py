@@ -1,14 +1,3 @@
-"""TODO
-+ 1. В функцию cancel добавить emoji
-2. После каждого вопроса предлагать пользователю досрочно завершить процесс
-3. Перевести проверку корректности введенных текстовых значений в middleware
-+ 4. Вывести пользователю информацию о выбранном поле
-+ 5. Вывести пользователю информацию о выбранном уровне активности
-6. Протестировать дробные числа при указании роста, веса, возраста
-"""
-
-import logging
-
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
@@ -18,12 +7,12 @@ from emoji import emojize
 from keyboards.inline.metabolism import metabolism_gender_markup, metabolism_activity_markup, activity_callback, \
     gender_callback
 from loader import dp
-
 from states.metabolism import Metabolism
-from utils.misc import metabolism_calculation
+from utils.misc import metabolism_calculation, rate_limit
 
 
-@dp.message_handler(Command("metabolism"), state=None)
+@rate_limit(60, "metabolism")
+@dp.message_handler(Command("metabolism", prefixes="!/"), state=None)
 async def enter_test(message: types.Message):
     await message.answer("Вы начали расчет своего уровня обмена веществ.\n"
                          "Ваш пол?",
@@ -55,7 +44,7 @@ async def answer_weight(message: types.Message, state: FSMContext):
     if answer.isdigit():
         await state.update_data(weight=int(answer))
     else:
-        await message.answer("Нужно ввести число !!!")
+        await message.answer("Нужно ввести целое число !!!")
         return
 
     await message.answer("Ваш рост, см?")
@@ -69,7 +58,7 @@ async def answer_height(message: types.Message, state: FSMContext):
     if answer.isdigit():
         await state.update_data(height=int(answer))
     else:
-        await message.answer("Нужно ввести число !!!")
+        await message.answer("Нужно ввести целое число !!!")
         return
 
     await message.answer("Ваш возраст, полных лет?")
@@ -83,7 +72,7 @@ async def answer_age(message: types.Message, state: FSMContext):
     if answer.isdigit():
         await state.update_data(age=int(answer))
     else:
-        await message.answer("Нужно ввести число !!!")
+        await message.answer("Нужно ввести целое число !!!")
         return
 
     await message.answer("Уровень вашей активности?",

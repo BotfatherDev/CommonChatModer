@@ -9,6 +9,7 @@ async def set_default_commands(dp):
         types.BotCommand("set_title", "(admins only) Установить название группы"),
         types.BotCommand("set_description", "(admins only) Установить описание группы"),
         types.BotCommand("gay", "Узнать, на сколько % пользователь гей"),
+        types.BotCommand("metabolism", "Узнать свою суточную норму калорий"),
         # types.BotCommand("roll", "Получить случайное число"),
         types.BotCommand("biba", "Узнать сколько см у пользователя биба"),
         # types.BotCommand("ro", "(admins only) Замутить пользователя"),

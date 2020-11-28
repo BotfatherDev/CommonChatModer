@@ -1,6 +1,18 @@
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
 
+"""универсальная кнопка отмены на все случаи жизни
+
+"""
+cancel_button = InlineKeyboardButton(text="Отмена", callback_data="cancel")
+cancel_markup = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        cancel_button]
+])
+
+"""клавиатура выбора пола респондента
+
+"""
 gender_callback = CallbackData("gender", "description", "value")
 
 metabolism_gender_markup = InlineKeyboardMarkup(inline_keyboard=[
@@ -9,12 +21,13 @@ metabolism_gender_markup = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text="Женский", callback_data=gender_callback.new(description="женщина", value="female"))
     ],
     [
-        InlineKeyboardButton(text="Отмена", callback_data="cancel")
+        cancel_button
     ]
 ])
 
-# Формируем клавиатуру видов активностей
+"""клавиатура выбора активности респондента
 
+"""
 activity_callback = CallbackData("activity", "description", "coefficient")
 
 metabolism_activity_markup = InlineKeyboardMarkup(row_width=1)
@@ -69,9 +82,7 @@ activities.append(
                          )
 )
 
-activities.append(
-    InlineKeyboardButton(text="Отмена", callback_data="cancel")
-)
+activities.append(cancel_button)
 
 for activity in activities:
     metabolism_activity_markup.insert(activity)
