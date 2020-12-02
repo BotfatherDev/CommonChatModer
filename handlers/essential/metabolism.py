@@ -1,7 +1,7 @@
 from aiogram import types
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
-from aiogram.types import CallbackQuery, ContentType
+from aiogram.types import CallbackQuery
 from emoji import emojize
 
 from keyboards.inline.metabolism import metabolism_gender_markup, metabolism_activity_markup, activity_callback, \
@@ -25,7 +25,6 @@ async def enter_test(message: types.Message):
 @dp.callback_query_handler(gender_callback.filter())
 async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
-    await call.answer(cache_time=60)
 
     gender = callback_data.get("value")
     await state.update_data(gender=gender)
@@ -37,7 +36,7 @@ async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMCont
     await Metabolism.weight.set()
 
 
-@dp.message_handler(content_types=ContentType.TEXT, state=Metabolism.weight)
+@dp.message_handler(state=Metabolism.weight)
 async def answer_weight(message: types.Message, state: FSMContext):
     answer = message.text
 
@@ -51,7 +50,7 @@ async def answer_weight(message: types.Message, state: FSMContext):
     await Metabolism.height.set()
 
 
-@dp.message_handler(content_types=ContentType.TEXT, state=Metabolism.height)
+@dp.message_handler(state=Metabolism.height)
 async def answer_height(message: types.Message, state: FSMContext):
     answer = message.text
 
@@ -65,7 +64,7 @@ async def answer_height(message: types.Message, state: FSMContext):
     await Metabolism.age.set()
 
 
-@dp.message_handler(content_types=ContentType.TEXT, state=Metabolism.age)
+@dp.message_handler(state=Metabolism.age)
 async def answer_age(message: types.Message, state: FSMContext):
     answer = message.text
 
@@ -83,7 +82,6 @@ async def answer_age(message: types.Message, state: FSMContext):
 @dp.message_handler(state=Metabolism.activity)
 @dp.callback_query_handler(activity_callback.filter())
 async def answer_activity(call: CallbackQuery, callback_data: dict, state: FSMContext):
-    await call.answer(cache_time=60)
     await call.message.edit_reply_markup(reply_markup=None)
 
     coefficient = callback_data.get("coefficient")
