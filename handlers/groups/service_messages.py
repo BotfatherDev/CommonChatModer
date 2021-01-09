@@ -25,6 +25,7 @@ async def left_chat_member(message: types.Message):
         return False
 
     # Проверяем вышел ли пользователь сам
+
     if message.left_chat_member.id == message.from_user.id:
         await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} вышел из чата.")
         until_date = datetime.datetime.now() + datetime.timedelta(days=1)

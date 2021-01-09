@@ -1,7 +1,7 @@
 from aiogram import Dispatcher
 from loguru import logger
 
-
+from .admin_filter import IsPrivateAdmin
 from .user_filters import IsContributor
 from .chat_filters import IsGroup
 from .chat_filters import IsPrivate
@@ -23,3 +23,4 @@ def setup(dp: Dispatcher):
     dp.filters_factory.bind(IsContributor)
     dp.filters_factory.bind(IsGroup)
     dp.filters_factory.bind(IsPrivate)
+    dp.filters_factory.bind(IsPrivateAdmin)

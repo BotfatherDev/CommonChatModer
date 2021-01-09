@@ -10,6 +10,7 @@ from aiogram.utils.markdown import hbold
 from filters import IsPrivate
 from keyboards.inline import start_markup
 from loader import dp
+from utils.misc import rate_limit
 
 
 @dp.message_handler(IsPrivate(), Command("start", prefixes="/"))

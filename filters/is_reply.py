@@ -9,9 +9,7 @@ class IsReplyFilter(BoundFilter):
     """
     Фильтр, проверяющий, явлляется ли сообщение ответом на сообщение
     """
-
     key = "is_reply"
-
     is_reply: bool
 
     async def check(self, message: types.Message) -> bool:

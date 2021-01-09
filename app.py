@@ -17,8 +17,9 @@ middlewares.setup(dp)
 async def on_startup(dp):
     await set_default_commands(dp)
     await on_startup_notify(dp)
+
     try:
-        db.create_table_stickers()
+        db.create_table_karma_users()
     except Exception as err:
         print(err)
     logger.info("Бот запущен")

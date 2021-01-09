@@ -1,3 +1,5 @@
+import logging
+
 from loguru import logger
 
 from aiogram import Dispatcher

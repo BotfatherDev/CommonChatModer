@@ -47,7 +47,6 @@ async def help(message: types.Message):
         "/gay [цель*] -  Тест на гея"                       "\n"
         "/biba - Проверить бибу"                            "\n"
         "/roll - Случайное число"                           "\n"
-        "/metabolism - Узнать свою суточную норму калорий"  "\n"
                                                             "\n"
         "{warning}".format(
             header1=hbold("Основные комманды"),
