@@ -35,9 +35,16 @@ def set_new_user_approved_permissions():
 # Права пользователя в муте
 def set_user_ro_permissions():
     new_permissions = copy(default_permissions)
+    print(new_permissions)
     new_permissions.update(
         can_send_messages=False,
+        can_send_media_messages=False,
+        can_send_polls=False,
+        can_send_other_messages=False,
+        can_add_web_page_previews=False,
+        can_invite_users=False
     )
+    print(new_permissions)
     return types.ChatPermissions(
         **new_permissions
     )
