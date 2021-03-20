@@ -69,8 +69,12 @@ async def win_or_loss(message: types.Message):
                     f"Пользователю @{username} ({name}) запрещено писать сообщения до {until_date} "
                     f"по причине: выиграл в казино"
                 )
+                break
         else:
             pass
+    else:
+        await asyncio.sleep(3)
+        await message.delete()
 
 
 
