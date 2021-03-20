@@ -36,7 +36,7 @@ async def win_or_loss(message: types.Message):
                 prize = "🍋🍋🍋"
             else:
                 time = 25
-                prize = "JACKPOT"
+                prize = "🔥JACKPOT🔥"
 
             if message.forward_from:
                 time += time
