@@ -42,7 +42,6 @@ async def win_or_loss(message: types.Message):
                 time += time
                 prize += "а так же жульничал"
 
-
             until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
             username = message.from_user.username
             name = message.from_user.get_mention(as_html=True)
