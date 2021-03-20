@@ -77,7 +77,7 @@ async def win_or_loss(message: types.Message):
         else:
             pass
     else:
-        await asyncio.sleep(3)
+        await asyncio.sleep(2.35)
         await message.delete()
 
 
