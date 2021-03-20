@@ -40,14 +40,14 @@ async def win_or_loss(message: types.Message):
 
             if message.forward_from:
                 time += time
-                prize += "а так же жульничал"
+                prize += " а так же жульничал"
 
             until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
             username = message.from_user.username
             name = message.from_user.get_mention(as_html=True)
 
             try:
-                await asyncio.sleep(1.5)
+                await asyncio.sleep(1.67)
                 await message.chat.restrict(
                     user_id=message.from_user.id,
                     permissions=set_user_ro_permissions(),
