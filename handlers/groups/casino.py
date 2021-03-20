@@ -47,7 +47,7 @@ async def win_or_loss(message: types.Message):
             name = message.from_user.get_mention(as_html=True)
 
             try:
-                await asyncio.sleep(1.3)
+                await asyncio.sleep(1.5)
                 await message.chat.restrict(
                     user_id=message.from_user.id,
                     permissions=set_user_ro_permissions(),
