@@ -31,7 +31,7 @@ async def win_or_loss(message: types.Message):
             elif i == 22:
                 time = 15
                 prize = "🍇🍇🍇"
-            elif i == 34:
+            elif i == 43:
                 time = 20
                 prize = "🍋🍋🍋"
             else:
