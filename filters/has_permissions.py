@@ -1,10 +1,8 @@
-import logging
 import typing
 from dataclasses import dataclass
 
-import loguru
 from aiogram import types
-from aiogram.dispatcher.filters import Filter, BoundFilter
+from aiogram.dispatcher.filters import Filter
 
 
 @dataclass
@@ -51,7 +49,7 @@ class HasPermissions(Filter):
 
     @classmethod
     def validate(
-        cls, full_config: typing.Dict[str, typing.Any]
+            cls, full_config: typing.Dict[str, typing.Any]
     ) -> typing.Optional[typing.Dict[str, typing.Any]]:
         """
         Метод, необходимый для использования фильтра из filters_factory
@@ -79,7 +77,9 @@ class HasPermissions(Filter):
         """
         message.conf[self.PAYLOAD_ARGUMENT_NAME] = member
 
-    async def _get_chat_member(self, message: types.Message) -> typing.Union[bool, types.ChatMember]:
+    async def _get_chat_member(
+            self, message: types.Message
+    ) -> typing.Union[bool, types.ChatMember]:
         """
         Метод для получения пользователя
         Если пользователь сохранён в кеше, достаёт пользователя из кеша и возвращает
@@ -90,16 +90,16 @@ class HasPermissions(Filter):
             admins = await message.chat.get_administrators()
             target_user_id = await self.get_target_id(message)
             try:
-                chat_member = next(filter(lambda member: member.user.id == target_user_id, admins))
+                chat_member = next(
+                    filter(lambda member: member.user.id == target_user_id, admins)
+                )
 
             except StopIteration:
                 return False
             self._set_cached_value(message, chat_member)
         return chat_member
 
-    async def check(
-        self, message: types.Message
-    ) -> bool:
+    async def check(self, message: types.Message) -> bool:
         """
         Основная логика фильтра. Возвращает True/False, или словарь с пользователем
         Когда возвращается False, бот не проваливается в handler

@@ -1,12 +1,10 @@
 from aiogram import Dispatcher
 from loguru import logger
 
-
-from .user_filters import IsContributor
-from .chat_filters import IsGroup
-from .chat_filters import IsPrivate
+from .chat_filters import IsGroup, IsPrivate
 from .has_permissions import HasPermissions
 from .is_reply import IsReplyFilter
+from .user_filters import IsContributor
 
 
 def setup(dp: Dispatcher):

@@ -1,4 +1,4 @@
-from aiogram.dispatcher.filters.state import StatesGroup, State
+from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
 # Создаем группу состояний Metabolism - для перечня вопросов для сбора исходных данных для формулы расчета

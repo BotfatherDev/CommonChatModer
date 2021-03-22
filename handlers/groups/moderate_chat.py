@@ -7,9 +7,11 @@ from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
-from data.permissions import set_user_ro_permissions, set_new_user_approved_permissions, set_no_media_permissions
+from data.permissions import (set_new_user_approved_permissions,
+                              set_no_media_permissions,
+                              set_user_ro_permissions)
 from filters import IsGroup
-from loader import bot, dp, db
+from loader import bot, db, dp
 
 
 @dp.message_handler(
@@ -25,7 +27,14 @@ async def read_only_mode(message: types.Message):
     используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
 
     # Создаем переменные для удобства
-    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
+    (
+        admin_username,
+        admin_mentioned,
+        chat_id,
+        member_id,
+        member_username,
+        member_mentioned,
+    ) = get_members_info(message)
 
     # Разбиваем команду на аргументы с помощью RegExp
     command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?")
@@ -58,7 +67,8 @@ async def read_only_mode(message: types.Message):
         await message.answer(
             f"Пользователю {member_mentioned} "
             f"было запрещено писать на {time} минут "
-            f"администратором {admin_mentioned} {reason} ")
+            f"администратором {admin_mentioned} {reason} "
+        )
 
         # Вносим информацию о муте в лог
         logger.info(
@@ -82,10 +92,22 @@ async def read_only_mode(message: types.Message):
     await message.reply_to_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unro"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["unro"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
+)
 async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
-    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
+    (
+        admin_username,
+        admin_mentioned,
+        chat_id,
+        member_id,
+        member_username,
+        member_mentioned,
+    ) = get_members_info(message)
 
     # Возвращаем пользователю возможность отправлять сообщения
     await bot.restrict_chat_member(
@@ -95,7 +117,9 @@ async def undo_read_only_mode(message: types.Message):
     )
 
     # Информируем об этом
-    await message.answer(f"Пользователь {member_mentioned} был размучен администратором {admin_mentioned}")
+    await message.answer(
+        f"Пользователь {member_mentioned} был размучен администратором {admin_mentioned}"
+    )
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Не забываем про лог
@@ -111,7 +135,12 @@ async def undo_read_only_mode(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["ban"], prefixes="!/"), is_reply=True, user_can_restrict_members=True)
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["ban"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
+)
 async def ban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
 
@@ -152,8 +181,12 @@ async def ban_user(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["unban"], prefixes="!/"), is_reply=True,
-                    user_can_restrict_members=True)
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["unban"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
+)
 async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
@@ -168,7 +201,9 @@ async def unban_user(message: types.Message):
     await message.chat.unban(user_id=member_id)
 
     # Пишем в чат
-    await message.answer(f"Пользователь {member_mentioned} был разбанен администратором {admin_mentioned}")
+    await message.answer(
+        f"Пользователь {member_mentioned} был разбанен администратором {admin_mentioned}"
+    )
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Пауза 5 сек
@@ -184,10 +219,21 @@ async def unban_user(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["media_false"], prefixes="!/"), is_reply=True,
-                    user_can_restrict_members=True)
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["media_false"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
+)
 async def media_false_handler(message: types.Message):
-    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
+    (
+        admin_username,
+        admin_mentioned,
+        chat_id,
+        member_id,
+        member_username,
+        member_mentioned,
+    ) = get_members_info(message)
 
     command_parse = re.compile(r"(!media_false|/media_false) ?(\d+)?")
     parsed = command_parse.match(message.text)
@@ -195,7 +241,7 @@ async def media_false_handler(message: types.Message):
 
     answer_text = f"Пользователь {member_mentioned} было был лишён права использовать медиаконтент "
     if time:
-        answer_text += f'на {time} минут\n'
+        answer_text += f"на {time} минут\n"
     answer_text += f"администратором {admin_mentioned}"
 
     # Проверяем на наличие и корректность срока media_false
@@ -211,9 +257,8 @@ async def media_false_handler(message: types.Message):
     try:
         logger.info(f"{new_permissions.__dict__}")
         await message.chat.restrict(
-            user_id=member_id,
-            permissions=new_permissions,
-            until_date=until_date)
+            user_id=member_id, permissions=new_permissions, until_date=until_date
+        )
         # Вносим информацию о муте в лог
         logger.info(
             f"Пользователю @{member_username} запрещено использовать медиаконтент до {until_date} "
@@ -255,10 +300,21 @@ async def block_sticker(message: types.Message):
     await message.reply("Стикерсет Забанен")
 
 
-@dp.message_handler(IsGroup(), Command(commands=["media_true"], prefixes="!/"), is_reply=True,
-                    user_can_restrict_members=True)
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["media_true"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
+)
 async def media_true_handler(message: types.Message):
-    admin_username, admin_mentioned, chat_id, member_id, member_username, member_mentioned = get_members_info(message)
+    (
+        admin_username,
+        admin_mentioned,
+        chat_id,
+        member_id,
+        member_username,
+        member_mentioned,
+    ) = get_members_info(message)
 
     try:
         # Возвращаем пользователю возможность отправлять медиаконтент
@@ -269,8 +325,10 @@ async def media_true_handler(message: types.Message):
         )
 
         # Информируем об этом
-        await message.answer(f"Пользователь {member_mentioned} "
-                             f"благодаря {admin_mentioned} может снова использовать медиаконтент")
+        await message.answer(
+            f"Пользователь {member_mentioned} "
+            f"благодаря {admin_mentioned} может снова использовать медиаконтент"
+        )
         logger.info(
             f"Пользователь @{member_username} благодаря @{admin_username} может снова использовать медиаконтент"
         )
@@ -302,5 +360,5 @@ def get_members_info(message: types.Message):
         message.chat.id,
         message.reply_to_message.from_user.id,
         message.reply_to_message.from_user.username,
-        message.reply_to_message.from_user.get_mention(as_html=True)
+        message.reply_to_message.from_user.get_mention(as_html=True),
     ]

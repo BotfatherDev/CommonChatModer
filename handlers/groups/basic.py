@@ -18,43 +18,47 @@ async def start(message: types.Message):
     в группе, которая находиться в приветствии"""
 
     # Выводим список комманд
-    await help(message)
+    await help_cmd(message)
 
 
-@dp.message_handler(IsGroup(), Command("help", prefixes="/"))
-async def help(message: types.Message):
+@dp.message_handler(IsGroup(), Command("help", prefixes="!/"))
+async def help_cmd(message: types.Message):
     """Хендлер на команду /help
     Выводит список комманд."""
+    
+    # Создаем текст
+    text = """{header1}
+/start - Начать диалог со мной
+/help - Помощь по комманде
 
-    # Отправляем список комманд
-    await message.answer(
-        "{header1}"                                         "\n"
-        "/start - Начать диалог со мной"                    "\n"
-        "/help - Помощь по комманде"                        "\n"
-                                                            "\n"
-        "{header2}"                                         "\n"
-        "/ro - Выставить RO пользователю"                   "\n"
-        "/unro - Убрать RO у пользователя"                  "\n"
-        "/ban - Забанить пользователя"                      "\n"
-        "/unban - Разбанить пользователя"                   "\n"
-                                                            "\n"
-        "{header3}"                                         "\n"
-        "/set_photo - Изменить фотку"                       "\n"
-        "/set_title - Изменить название"                    "\n"
-        "/set_description - Изменить описание"              "\n"
-                                                            "\n"
-        "{header4}"                                         "\n"
-        "/gay [цель*] -  Тест на гея"                       "\n"
-        "/biba - Проверить бибу"                            "\n"
-        "/roll - Случайное число"                           "\n"
-        "/metabolism - Узнать свою суточную норму калорий"  "\n"
-                                                            "\n"
-        "{warning}".format(
+{header2}
+/ro - Выставить RO пользователю
+/unro - Убрать RO у пользователя      
+/ban - Забанить пользователя
+/unban - Разбанить пользователя
+
+{header3}
+/set_photo - Изменить фотку
+/set_title - Изменить название
+/set_description - Изменить описание
+
+{header4}
+/gay [цель*] -  Тест на гея
+/biba - Проверить бибу
+/roll - Случайное число
+/metabolism - Узнать свою суточную норму калорий
+
+{warning}
+""".format(
             header1=hbold("Основные комманды"),
             header2=hbold("Администрирование"),
             header3=hbold("Работа с группой"),
             header4=hbold("Другие комманды"),
-            warning=hbold("В группах функционал бота может отличаться.\n"
-                          "* - необязательный аргумент")
-        )
+            warning=hbold(
+                "В группах функционал бота может отличаться.\n"
+                "* - необязательный аргумент"
+            )
     )
+    
+    # Отправляем список комманд
+    await message.answer(text)
