@@ -1,5 +1,7 @@
 import sqlite3
 
+from loguru import logger
+
 
 class Database:
     def __init__(self, path_to_db="main.db"):
@@ -13,7 +15,7 @@ class Database:
         if not parameters:
             parameters = ()
         connection = self.connection
-        connection.set_trace_callback(logger)
+        # connection.set_trace_callback(logger)
         cursor = connection.cursor()
         data = None
         cursor.execute(sql, parameters)
@@ -55,11 +57,66 @@ class Database:
         """
         return self.execute(sql, fetchall=True)
 
+    def create_table_karma_users(self):
 
-def logger(statement):
-    print(f"""
-_____________________________________________________        
-Executing: 
-{statement}
-_____________________________________________________
-""")
+        """
+        Создаем таблицу с название USERS_KARMA
+        колонки:
+        user_id : integer
+        karma: integer
+
+        """
+        sql = """CREATE TABLE USERS_KARMA (
+            
+            user_id INTEGER PRIMARY KEY,
+            karma INTEGER,
+            full_name varchar 255
+        )
+        """
+        self.execute(sql, commit=True)
+
+    def update_karma(self, user_id: int, karma: int = 0):
+
+        # если статус update_karma = True, мы обновляем карму
+        now_karma = self.select_karma_user(user_id=user_id)[0][1]
+
+        now_karma += karma
+        sql = "UPDATE USERS_KARMA SET karma = ? WHERE user_id = ?"
+        return self.execute(sql, parameters=(now_karma, user_id), commit=True)
+
+    def add_user(self, user_id: int, full_name: str, karma: int = 0):
+        try:
+            sql = "INSERT INTO USERS_KARMA (user_id, full_name, karma) VALUES (?,?,?)"
+            self.execute(sql, parameters=(user_id, full_name, karma), commit=True)
+        except Exception as e:
+            logger.info(e)
+
+    def select_karma_user(self, user_id: int):
+        """
+        Выводим пользователя из базы данных по юзеру
+        """
+        sql = "SELECT * FROM USERS_KARMA WHERE user_id = ?"
+        return self.execute(sql, parameters=(user_id,), fetchall=True)
+
+    def select_karma_top(self, limit: int = 10):
+        """
+        Функция в котором мы определяем количество топ пользователей
+        группы по набранным баллам
+
+        parameters:
+        limit - int , default = 10 users
+        """
+
+        sql = "SELECT * FROM USERS_KARMA ORDER BY karma DESC"
+        setting_limit = " LIMIT " + str(limit)
+        sql += setting_limit
+
+        return self.execute(sql, fetchall=True)
+
+# def logger(statement):
+#     print(f"""
+# _____________________________________________________
+# Executing:
+# {statement}
+# _____________________________________________________
+# """)

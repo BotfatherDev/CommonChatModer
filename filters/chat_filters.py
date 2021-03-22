@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher.filters import BoundFilter
+from loguru import logger
 
 
 class IsGroup(BoundFilter):
