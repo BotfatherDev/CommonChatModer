@@ -11,7 +11,7 @@ report_command = Command("report", prefixes={"/", "!"})
 
 @dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
 async def report_user(message: types.Message):
-    display_name = get_display_name(message.from_user)
+    display_name = get_display_name(message.reply_to_message.from_user)
 
     await message.answer(
         f"Репорт на пользователя {display_name} успешно отправлен.\n"
