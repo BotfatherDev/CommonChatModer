@@ -11,6 +11,7 @@ report_command = Command("report", prefixes={"/", "!"})
 
 @dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
 async def report_user(message: types.Message):
+    """Отправляет жалобу на пользователя админам"""
     display_name = get_display_name(message.reply_to_message.from_user)
 
     await message.answer(
@@ -33,6 +34,7 @@ async def report_user(message: types.Message):
 
 @dp.message_handler(IsGroup(), report_command)
 async def report_user_if_command_is_not_reply(message: types.Message):
+    """Уведомляет, что репорт должен быть ответом"""
     await message.reply(
         "Сообщение с командой должно быть ответом на сообщение пользователя, "
         "на которого вы хотите пожаловаться"
