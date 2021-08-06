@@ -1,13 +1,13 @@
 import datetime
 
 from aiogram import types
-from loguru import logger
 
-from data.permissions import set_new_user_permissions, set_new_user_approved_permissions
+from data.permissions import (set_new_user_approved_permissions,
+                              set_new_user_permissions)
 from filters import IsGroup
-from keyboards.inline import generate_confirm_markup, user_callback, source_markup
-from loader import bot
-from loader import dp
+from keyboards.inline import (generate_confirm_markup, source_markup,
+                              user_callback)
+from loader import bot, dp
 
 
 @dp.message_handler(IsGroup(), content_types=types.ContentType.LEFT_CHAT_MEMBER)
@@ -26,13 +26,17 @@ async def left_chat_member(message: types.Message):
 
     # Проверяем вышел ли пользователь сам
     if message.left_chat_member.id == message.from_user.id:
-        await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} вышел из чата.")
+        await message.answer(
+            f"{message.left_chat_member.get_mention(as_html=True)} вышел из чата."
+        )
         until_date = datetime.datetime.now() + datetime.timedelta(days=1)
         await message.chat.kick(user_id=message.from_user.id, until_date=until_date)
 
     else:
-        await message.answer(f"{message.left_chat_member.get_mention(as_html=True)} был удален из чата "
-                             f"пользователем {message.from_user.get_mention(as_html=True)}.")
+        await message.answer(
+            f"{message.left_chat_member.get_mention(as_html=True)} был удален из чата "
+            f"пользователем {message.from_user.get_mention(as_html=True)}."
+        )
 
 
 @dp.message_handler(IsGroup(), content_types=types.ContentTypes.NEW_CHAT_MEMBERS)
@@ -57,7 +61,7 @@ async def new_chat_member(message: types.Message):
                 f"{new_member.get_mention(as_html=True)}, добро пожаловать в чат!\n"
                 "Подтверди, что ты не бот, нажатием на кнопку ниже"
             ),
-            reply_markup=generate_confirm_markup(new_member.id)
+            reply_markup=generate_confirm_markup(new_member.id),
         )
 
 

@@ -1,16 +1,17 @@
 from aiogram import executor
 from loguru import logger
 
+import filters
 from data.config import SKIP_UPDATES
-
 from loader import db, dp
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
-import filters
 
 filters.setup(dp)
+# noinspection PyUnresolvedReferences
 import handlers
 import middlewares
+
 middlewares.setup(dp)
 
 
@@ -24,5 +25,5 @@ async def on_startup(dp):
     logger.info("Бот запущен")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES)

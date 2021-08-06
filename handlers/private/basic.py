@@ -19,41 +19,51 @@ async def start(message: types.Message):
     Используется в личных сообщениях"""
 
     # Отправляем приветствие
-    await message.answer(f"Привет, {hbold(message.from_user.full_name)}\n\n"
-                         "Я простой чат-менеджер с открытым исходным кодом, "
-                         "который пишется участниками чата по разработке ботов. "
-                         "Для полного функционала добавь меня в группу ", reply_markup=start_markup)
-
-
-@dp.message_handler(IsPrivate(), Command("help", prefixes="/"))
-async def help(message: types.Message):
-    """Хендлер на команду /help
-    Выводит список комманд.
-    Используется в личных сообщениях"""
-
-    # Отправляем список комманд
     await message.answer(
-        "{header1}"                              "\n"
-        "/start - Начать диалог со мной"         "\n"
-        "/help - Помощь по комманде"             "\n"
-                                                 "\n"
-        "{header2}"                              "\n"
-        "/gay [цель*] -  Тест на гея"            "\n"
-        "/biba - Проверить бибу"                 "\n"
-                                                 "\n"
-        "{warning}".format(
-            header1=hbold("Основные комманды"),
-            header2=hbold("Другие комманды"),
-            warning=hbold("В группах функционал бота может отличаться.\n"
-                          "* - необязательный аргумент")
-        )
+        f"Привет, {hbold(message.from_user.full_name)}\n\n"
+        "Я простой чат-менеджер с открытым исходным кодом, "
+        "который пишется участниками чата по разработке ботов. "
+        "Для полного функционала добавь меня в группу ",
+        reply_markup=start_markup,
     )
 
 
-@dp.callback_query_handler(text='help')
+@dp.message_handler(IsPrivate(), Command("help", prefixes="/"))
+async def help_cmd(message: types.Message):
+    """
+    Хендлер на команду /help
+    Выводит список комманд.
+    Используется в личных сообщениях
+    """
+
+    # Создаем текст сообщения
+    text = """{header1}
+/start - Начать диалог со мной
+/help - Помощь по комманде
+
+{header2}
+/gay [цель*] -  Тест на гея
+/biba - Проверить бибу
+/roll - Случайное число
+/metabolism - Узнать свою суточную норму калорий
+
+{warning}
+""".format(
+        header1=hbold("Основные комманды"),
+        header2=hbold("Другие комманды"),
+        warning=hbold("В группах функционал бота может отличаться.\n"
+                      "* - необязательный аргумент"))
+
+    # Отправляем список комманд
+    await message.answer(text)
+
+
+@dp.callback_query_handler(text="help")
 async def callback_handler(query: types.CallbackQuery):
-    """Обычный CallBack хендлер,
-    который проверяет на что нажал пользователь"""
+    """
+    CallBack хендлер, который проверяет
+    на что нажал пользователь
+    """
 
     # Присваиваем query дату переменной
     answer_data = query.data
@@ -66,4 +76,4 @@ async def callback_handler(query: types.CallbackQuery):
     # Выводим список комманд, если пользователь нажал на кнопку
     # со списком комманд, которая имеет CB дату "help"
     if answer_data == "help":
-        await help(query.message)
+        await help_cmd(query.message)

@@ -10,7 +10,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 
 from data.permissions import set_user_ro_permissions
-from loader import dp, db
+from loader import db, dp
 from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
 
@@ -115,19 +115,24 @@ async def delete_hamster(message: types.Message, state: FSMContext):
                 data["Sticker Flood"] += 1
                 if data["Sticker Flood"] >= 3:
                     try:
-                        await message.chat.restrict(user_id=message.from_user.id,
-                                                    permissions=set_user_ro_permissions(),
-                                                    until_date=datetime.datetime.now() + datetime.timedelta(
-                                                        minutes=int(10))
-                                                    )
+                        await message.chat.restrict(
+                            user_id=message.from_user.id,
+                            permissions=set_user_ro_permissions(),
+                            until_date=datetime.datetime.now()
+                                       + datetime.timedelta(minutes=int(10)),
+                        )
                     except Exception as err:
                         pass
-                    await message.answer(f"{message.from_user.get_mention(as_html=True)} забанен на 10 мин "
-                                         f"за плохие стикеры.")
-                    
+                    await message.answer(
+                        f"{message.from_user.get_mention(as_html=True)} забанен на 10 мин "
+                        f"за плохие стикеры."
+                    )
+
                     data["Sticker Flood"] = 0
-                    
+
                     # я обиделся
-                    
+
                     return
-        await message.answer(f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука.")
+        await message.answer(
+            f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука."
+        )

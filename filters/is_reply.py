@@ -11,7 +11,6 @@ class IsReplyFilter(BoundFilter):
     """
 
     key = "is_reply"
-
     is_reply: bool
 
     async def check(self, message: types.Message) -> bool:

@@ -1,10 +1,9 @@
 # Модуль формул расчета метаболизма и БЖУ
 
-def metabolism_calculation(gender: str,
-                           age: int,
-                           height: int,
-                           weight: int,
-                           activity: float):
+
+def metabolism_calculation(
+        gender: str, age: int, height: int, weight: int, activity: float
+):
     """Расчет уровня метаболизма по заданным параметрам
     gender - пол мужской/женский
     age - возраст, полных лет

@@ -13,10 +13,10 @@ REDIS_HOST = env("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = env("REDIS_PORT", 6379)
 
 aiogram_redis = {
-    'host': REDIS_HOST,
+    "host": REDIS_HOST,
 }
 
 redis = {
-    'address': (REDIS_HOST, REDIS_PORT),
-    'encoding': 'utf8'
+    "address": (REDIS_HOST, REDIS_PORT),
+    "encoding": "utf8"
 }
