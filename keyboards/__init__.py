@@ -1,2 +1,1 @@
-from . import default
-from . import inline
+from . import default, inline

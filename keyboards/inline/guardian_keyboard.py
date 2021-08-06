@@ -1,4 +1,4 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.callback_data import CallbackData
 
 # создём CallbackData для удобного парсинга калбеков
@@ -21,7 +21,7 @@ def generate_confirm_markup(user_id: int) -> InlineKeyboardMarkup:
             callback_data=user_callback.new(
                 being="human",
                 user_id=user_id,
-            )
+            ),
         ),
         # и кнопка "bot", в калбеке которой будет лежать confirm:bot:<user_id>
         InlineKeyboardButton(
@@ -29,7 +29,7 @@ def generate_confirm_markup(user_id: int) -> InlineKeyboardMarkup:
             callback_data=user_callback.new(
                 being="bot",
                 user_id=user_id,
-            )
+            ),
         ),
     )
 

@@ -4,8 +4,9 @@ from aiogram.dispatcher.filters import Command
 from aiogram.types import CallbackQuery
 from emoji import emojize
 
-from keyboards.inline.metabolism import metabolism_gender_markup, metabolism_activity_markup, activity_callback, \
-    gender_callback
+from keyboards.inline.metabolism import (activity_callback, gender_callback,
+                                         metabolism_activity_markup,
+                                         metabolism_gender_markup)
 from loader import dp
 from states.metabolism import Metabolism
 from utils.misc import metabolism_calculation, rate_limit
@@ -14,9 +15,10 @@ from utils.misc import metabolism_calculation, rate_limit
 @rate_limit(60, "metabolism")
 @dp.message_handler(Command("metabolism", prefixes="!/"), state=None)
 async def enter_test(message: types.Message):
-    await message.answer("Вы начали расчет своего уровня обмена веществ.\n"
-                         "Ваш пол?",
-                         reply_markup=metabolism_gender_markup)
+    await message.answer(
+        "Вы начали расчет своего уровня обмена веществ.\n" "Ваш пол?",
+        reply_markup=metabolism_gender_markup,
+    )
 
     await Metabolism.gender.set()
 
@@ -40,11 +42,10 @@ async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMCont
 async def answer_weight(message: types.Message, state: FSMContext):
     answer = message.text
 
-    if answer.isdigit():
-        await state.update_data(weight=int(answer))
-    else:
-        await message.answer("Нужно ввести целое число !!!")
-        return
+    if not answer.isdigit():
+        return await message.answer("Нужно ввести целое число !!!")
+
+    await state.update_data(weight=int(answer))
 
     await message.answer("Ваш рост, см?")
     await Metabolism.height.set()
@@ -54,11 +55,10 @@ async def answer_weight(message: types.Message, state: FSMContext):
 async def answer_height(message: types.Message, state: FSMContext):
     answer = message.text
 
-    if answer.isdigit():
-        await state.update_data(height=int(answer))
-    else:
-        await message.answer("Нужно ввести целое число !!!")
-        return
+    if not answer.isdigit():
+        return await message.answer("Нужно ввести целое число !!!")
+
+    await state.update_data(height=int(answer))
 
     await message.answer("Ваш возраст, полных лет?")
     await Metabolism.age.set()
@@ -68,14 +68,15 @@ async def answer_height(message: types.Message, state: FSMContext):
 async def answer_age(message: types.Message, state: FSMContext):
     answer = message.text
 
-    if answer.isdigit():
-        await state.update_data(age=int(answer))
-    else:
-        await message.answer("Нужно ввести целое число !!!")
-        return
+    if not answer.isdigit():
+        return await message.answer("Нужно ввести целое число !!!")
 
-    await message.answer("Уровень вашей активности?",
-                         reply_markup=metabolism_activity_markup)
+    await state.update_data(age=int(answer))
+
+    await message.answer(
+        "Уровень вашей активности?", reply_markup=metabolism_activity_markup
+    )
+
     await Metabolism.activity.set()
 
 
@@ -98,7 +99,9 @@ async def answer_activity(call: CallbackQuery, callback_data: dict, state: FSMCo
     weight = data.get("weight")  # вес, кг
     activity = data.get("activity")  # коэффициент уровня активности
 
-    result = metabolism_calculation(gender=gender, age=age, height=height, weight=weight, activity=activity)
+    result = metabolism_calculation(
+        gender=gender, age=age, height=height, weight=weight, activity=activity
+    )
 
     await call.message.answer(f"УРОВЕНЬ ВАШЕГО МЕТАБОЛИЗМА - {result} ККал \n\n")
 
@@ -108,7 +111,10 @@ async def answer_activity(call: CallbackQuery, callback_data: dict, state: FSMCo
 @dp.callback_query_handler(text="cancel")
 async def cancel_buying(call: CallbackQuery, state: FSMContext):
     # Ответим в окошке с уведомлением!
-    await call.answer(f"Вы не узнаете много нового о себе {emojize(':thinking_face:')}", show_alert=True)
+    await call.answer(
+        f"Вы не узнаете много нового о себе {emojize(':thinking_face:')}",
+        show_alert=True,
+    )
 
     # Отправляем пустую клавиатуру изменяя сообщение
     await call.message.edit_reply_markup(reply_markup=None)

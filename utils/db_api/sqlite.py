@@ -9,7 +9,14 @@ class Database:
     def connection(self):
         return sqlite3.connect(self.path_to_db)
 
-    def execute(self, sql: str, parameters: tuple = None, fetchone=False, fetchall=False, commit=False):
+    def execute(
+            self,
+            sql: str,
+            parameters: tuple = None,
+            fetchone=False,
+            fetchall=False,
+            commit=False,
+    ):
         if not parameters:
             parameters = ()
         connection = self.connection
@@ -37,9 +44,7 @@ class Database:
 
     @staticmethod
     def format_args(sql, parameters: dict):
-        sql += " AND ".join([
-            f"{item} = ?" for item in parameters
-        ])
+        sql += " AND ".join([f"{item} = ?" for item in parameters])
         return sql, tuple(parameters.values())
 
     def block_sticker(self, set_name: str):
@@ -57,9 +62,11 @@ class Database:
 
 
 def logger(statement):
-    print(f"""
+    print(
+        f"""
 _____________________________________________________        
 Executing: 
 {statement}
 _____________________________________________________
-""")
+"""
+    )

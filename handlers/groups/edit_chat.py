@@ -43,4 +43,3 @@ async def set_new_description(message: types.Message):
 
     # Вариант 2
     await message.chat.set_description(description=description)
-

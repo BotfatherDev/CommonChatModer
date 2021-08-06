@@ -1,12 +1,14 @@
 import sys
 from random import randint
-
 from typing import Optional
 
 
-def generate_num(min_num: Optional[str], max_num: Optional[str],
-                 min_default: int = 0, max_default: int = 100) -> int:
-
+def generate_num(
+        min_num: Optional[str],
+        max_num: Optional[str],
+        min_default: int = 0,
+        max_default: int = 100,
+) -> int:
     # если не указанно первое число ставим стандартные значения (min_default, max_default)
     if not min_num:
         min_num = min_default
