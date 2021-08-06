@@ -29,3 +29,11 @@ async def report_user(message: types.Message):
             from_chat_id=message.chat.id,
             message_id=message.reply_to_message.message_id
         )
+
+
+@dp.message_handler(IsGroup(), report_command)
+async def report_user_if_command_is_not_reply(message: types.Message):
+    await message.reply(
+        "Сообщение с командой должно быть ответом на сообщение пользователя, "
+        "на которого вы хотите пожаловаться"
+    )
