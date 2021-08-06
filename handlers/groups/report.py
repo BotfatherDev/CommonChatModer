@@ -6,12 +6,10 @@ from filters import IsGroup, IsReplyFilter
 from loader import dp, bot
 from utils.misc.display_name import get_display_name
 
+report_command = Command("report", prefixes={"/", "!"})
 
-@dp.message_handler(
-    IsGroup(),
-    IsReplyFilter(True),
-    Command("report", prefixes={"/", "!"})
-)
+
+@dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
 async def report_user(message: types.Message):
     display_name = get_display_name(message.from_user)
 
