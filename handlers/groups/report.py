@@ -1,10 +1,10 @@
 from aiogram import types
 from aiogram.dispatcher.filters import Command
-from aiogram.utils.markdown import hbold
 
 from data.config import ADMINS_ID
 from filters import IsGroup, IsReplyFilter
 from loader import dp, bot
+from utils.misc.display_name import get_display_name
 
 
 @dp.message_handler(
@@ -13,10 +13,7 @@ from loader import dp, bot
     Command("report", prefixes={"/", "!"})
 )
 async def report_user(message: types.Message):
-    if message.from_user.username:
-        display_name = f"@{message.from_user.username}"
-    else:
-        display_name = hbold(message.from_user.first_name)
+    display_name = get_display_name(message.from_user)
 
     await message.answer(
         f"Репорт на пользователя {display_name} успешно отправлен.\n"
