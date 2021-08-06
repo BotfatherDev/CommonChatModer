@@ -6,7 +6,7 @@ class IsGroup(BoundFilter):
 
     async def check(self, message: types.Message):
         return message.chat.type in (types.ChatType.GROUP,
-                                     types.ChatType.SUPERGROUP)
+                                     types.ChatType.SUPER_GROUP)
 
 
 class IsPrivate(BoundFilter):
