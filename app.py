@@ -1,18 +1,19 @@
-from aiogram import executor
+from aiogram import executor, types
 from loguru import logger
 
 import filters
+import middlewares
+
 from data.config import SKIP_UPDATES
 from loader import db, dp
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
 
+middlewares.setup(dp)
 filters.setup(dp)
+
 # noinspection PyUnresolvedReferences
 import handlers
-import middlewares
-
-middlewares.setup(dp)
 
 
 async def on_startup(dp):
@@ -26,4 +27,5 @@ async def on_startup(dp):
 
 
 if __name__ == "__main__":
-    executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES)
+    executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES,
+                           allowed_updates=types.AllowedUpdates.all())
