@@ -13,7 +13,7 @@ from utils.misc import metabolism_calculation, rate_limit
 
 
 @rate_limit(60, "metabolism")
-@dp.message_handler(Command("metabolism", prefixes="!/"), state=None)
+@dp.message_handler(Command("metabolism", prefixes="!/"), chat_type=types.ChatType.PRIVATE)
 async def enter_test(message: types.Message):
     await message.answer(
         "Вы начали расчет своего уровня обмена веществ.\n" "Ваш пол?",
