@@ -23,8 +23,7 @@ async def enter_test(message: types.Message):
     await Metabolism.gender.set()
 
 
-@dp.message_handler(state=Metabolism.gender)
-@dp.callback_query_handler(gender_callback.filter())
+@dp.callback_query_handler(gender_callback.filter(), state=Metabolism.gender)
 async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
 
