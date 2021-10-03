@@ -1,7 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import hlink
-from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from data.config import ADMINS_ID
 from filters import IsGroup, IsReplyFilter
@@ -10,7 +9,6 @@ from utils.misc.display_name import get_display_name
 
 report_command = Command("report", prefixes={"/", "!"})
 
-AsyncIOScheduler
 
 @dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
 async def report_user(message: types.Message):
