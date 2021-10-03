@@ -1,5 +1,6 @@
 from aiogram import types
 from aiogram.dispatcher.filters import Command
+from aiogram.utils.markdown import hlink
 
 from data.config import ADMINS_ID
 from filters import IsGroup, IsReplyFilter
@@ -23,7 +24,7 @@ async def report_user(message: types.Message):
         await bot.send_message(
             admin_id,
             f"Кинут репорт на пользователя {display_name} "
-            f"за следующее сообщение"
+            "за следующее " + hlink("сообщение", message.reply_to_message.url)
         )
         await bot.forward_message(
             admin_id,
