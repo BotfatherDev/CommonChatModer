@@ -1,0 +1,13 @@
+version: '3.1'
+services:
+  commonmoder:
+    container_name: commonmoder
+    build:
+      context: .
+    image: commonmoder
+    command: python app.py
+    restart: always
+    volumes:
+    - .:/src
+    env_file:
+      - ".env"
