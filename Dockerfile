@@ -1,9 +1,9 @@
 FROM python:3.8
 
-WORKDIR /botname
+WORKDIR /src
 
-COPY requirements.txt /botname/
-RUN pip install -r /botname/requirements.txt
-COPY . /botname/
+COPY requirements.txt /src/
+RUN pip install -r /src/requirements.txt
+COPY . /src/
 
-CMD python3 /botname/app.py
+CMD python3 /src/app.py
