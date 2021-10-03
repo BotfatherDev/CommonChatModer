@@ -5,17 +5,18 @@ from loguru import logger
 
 async def set_default_commands(dp: Dispatcher):
     """
-    Ставит стандартные комманды бота
+    Ставит стандартные команды бота
     """
 
-    logger.info("Установка стандартных комманд-подсказок...")
+    logger.info("Установка стандартных команд-подсказок...")
 
-    # TODO: Переместить это в нормальное место
     commands_members = {
         "gay": "Узнать, на сколько % пользователь гей",
         "biba": "Узнать сколько см у пользователя биба",
     }
-
+    command_defaults = {
+        'help': 'Help me'
+    }
     commands_admins = {
         "set_photo": "(admins only) Установить фото в чате",
         "set_title": "(admins only) Установить название группы",
@@ -26,10 +27,16 @@ async def set_default_commands(dp: Dispatcher):
         "media_true": "(admins only) Разрешает использование media",
     }
     await dp.bot.set_my_commands(
+        [BotCommand(name, value) for name, value in command_defaults.items()],
+        scope=types.BotCommandScopeDefault()
+    )
+    await dp.bot.set_my_commands(
         [BotCommand(name, value) for name, value in commands_members.items()],
-        scope=types.BotCommandScopeType.ALL_GROUP_CHATS
+        scope=types.BotCommandScopeAllGroupChats()
     )
     await dp.bot.set_my_commands(
         [BotCommand(name, value) for name, value in commands_admins.items()],
-        scope=types.BotCommandScopeType.ALL_CHAT_ADMINISTRATORS
+        scope=types.BotCommandScopeAllChatAdministrators()
     )
+    logger.info('Команды назначены.')
+
