@@ -41,7 +41,7 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
     if chat_member_updated.new_chat_member.status == types.ChatMemberStatus.BANNED:
         text = f"{member_mention} был удален из чата пользователем {performer_mention}."
 
-    elif chat_member_updated.new_chat_member.status == types.ChatMemberStatus.RESTRICTED:
+    elif chat_member_updated.new_chat_member.status == types.ChatMemberStatus.RESTRICTED and chat_member_updated.old_chat_member.status == types.ChatMemberStatus.ADMINISTRATOR:
         text = f"Для пользователя {member_mention} были изменены права пользователем {performer_mention}."
 
     # Проверяем вышел ли пользователь сам
