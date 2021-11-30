@@ -1,0 +1,20 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ work_in_groups ]
+
+jobs:
+
+  build:
+    runs-on: production
+    steps:
+      - name: Pull from Github
+        run: |
+          git pull
+        working-directory: /home/latand/CommonChatModer
+
+      - name: Restart the bot
+        run: |
+          docker-compose restart
+        working-directory: /home/latand/CommonChatModer
