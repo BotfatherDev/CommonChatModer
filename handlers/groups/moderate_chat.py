@@ -55,7 +55,7 @@ async def read_only_mode(message: types.Message):
     # Разбиваем команду на аргументы с помощью RegExp
     command_parse = re.compile(r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhds]\b)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
-    reason = parsed.group(5)
+    reason = parsed.group(4)
     # Проверяем на наличие и корректность срока RO
     # Проверяем на наличие причины
     reason = "без указания причины" if not reason else f"по причине: {reason}"
