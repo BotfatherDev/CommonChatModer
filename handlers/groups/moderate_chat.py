@@ -14,9 +14,25 @@ from filters import IsGroup
 from loader import bot, db, dp
 
 
+restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhd]\b)')
+
+
+def get_restriction_period(text: str) -> int:
+    """
+    Extract restriction period (in seconds) from text using regex search
+    :param text: text to parse
+    :return: restriction period in seconds (0 if nothing found, which means permanent restriction)
+    """
+    if match := re.search(restriction_time_regex, text):
+        time, modifier = match.groups()
+        multipliers = {"m": 60, "h": 3600, "d": 86400}
+        return int(time) * multipliers[modifier]
+    return 0
+
+
 @dp.message_handler(
     IsGroup(),
-    regexp=r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?",
+    regexp=r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhd]\b)? ?([\w+\D]+)?",
     is_reply=True,
     user_can_restrict_members=True,
 )
@@ -37,46 +53,38 @@ async def read_only_mode(message: types.Message):
     ) = get_members_info(message)
 
     # Разбиваем команду на аргументы с помощью RegExp
-    command_parse = re.compile(r"(!ro|/ro) ?(\d+)? ?([\w+\D]+)?")
+    command_parse = re.compile(r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhd]\b)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
-    time = parsed.group(2)
-    reason = parsed.group(3)
+    reason = parsed.group(4)
     # Проверяем на наличие и корректность срока RO
-    if not time:
-        time = 5
-    else:
-        if int(time) < 1:
-            time = 1
     # Проверяем на наличие причины
-    if not reason:
-        reason = "без указания причины"
-    else:
-        reason = f"по причине: {reason}"
+    reason = "без указания причины" if not reason else f"по причине: {reason}"
     # Получаем конечную дату, до которой нужно замутить
-    until_date = datetime.datetime.now() + datetime.timedelta(minutes=int(time))
+    ro_period = get_restriction_period(message.text)
+    ro_end_date = message.date + datetime.timedelta(seconds=ro_period)
 
     try:
         # Пытаемся забрать права у пользователя
         await message.chat.restrict(
             user_id=member_id,
             permissions=set_user_ro_permissions(),
-            until_date=until_date,
+            until_date=ro_end_date,
         )
 
         # Отправляем сообщение
         await message.answer(
             f"Пользователю {member_mentioned} "
-            f"было запрещено писать на {time} минут "
+            f"было запрещено писать до {ro_end_date.strftime('%d.%m.%Y %H:%M')} "
             f"администратором {admin_mentioned} {reason} "
         )
 
         # Вносим информацию о муте в лог
         logger.info(
-            f"Пользователю @{member_username} запрещено писать сообщения до {until_date} админом @{admin_username}"
+            f"Пользователю @{member_username} запрещено писать сообщения до {ro_end_date.strftime('%d.%m.%Y %H:%M')} админом @{admin_username} "
         )
 
     # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
-    except BadRequest:
+    except BadRequest as e:
         # Отправляем сообщение
         await message.answer(
             f"Пользователь {member_mentioned} "
@@ -84,7 +92,10 @@ async def read_only_mode(message: types.Message):
         )
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог замутить пользователя @{member_username}")
-    service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
+    service_message = await message.reply(
+        'Сообщение самоуничтожится через 5 секунд.'
+    )
+
     await asyncio.sleep(5)
     # после прошедших 5 секунд, бот удаляет сообщение от администратора и от самого бота
     await message.delete()
