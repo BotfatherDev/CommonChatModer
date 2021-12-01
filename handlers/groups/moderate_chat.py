@@ -14,7 +14,7 @@ from filters import IsGroup
 from loader import bot, db, dp
 
 
-restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhd]\b)')
+restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhds]\b)')
 
 
 def get_restriction_period(text: str) -> int:
@@ -25,14 +25,14 @@ def get_restriction_period(text: str) -> int:
     """
     if match := re.search(restriction_time_regex, text):
         time, modifier = match.groups()
-        multipliers = {"m": 60, "h": 3600, "d": 86400}
+        multipliers = {"m": 60, "h": 3600, "d": 86400, "s": 1}
         return int(time) * multipliers[modifier]
     return 0
 
 
 @dp.message_handler(
     IsGroup(),
-    regexp=r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhd]\b)? ?([\w+\D]+)?",
+    regexp=r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhds]\b)? ?([\w+\D]+)?",
     is_reply=True,
     user_can_restrict_members=True,
 )
