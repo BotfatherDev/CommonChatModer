@@ -17,6 +17,7 @@ from loader import bot, db, dp
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhds]\b)')
 
 
+
 def get_restriction_period(text: str) -> int:
     """
     Extract restriction period (in seconds) from text using regex search
@@ -32,7 +33,7 @@ def get_restriction_period(text: str) -> int:
 
 @dp.message_handler(
     IsGroup(),
-    regexp=r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhds]\b)? ?([\w+\D]+)?",
+    regexp=r"(!ro|/ro) ?(\b[1-9][0-9]\w)? ?([\w+\D]+)?",
     is_reply=True,
     user_can_restrict_members=True,
 )
@@ -53,9 +54,9 @@ async def read_only_mode(message: types.Message):
     ) = get_members_info(message)
 
     # Разбиваем команду на аргументы с помощью RegExp
-    command_parse = re.compile(r"(!ro|/ro) ?(\b[1-9][0-9]*)([mhds]\b)? ?([\w+\D]+)?")
+    command_parse = re.compile(r"(!ro|/ro) ?(\b[1-9][0-9]\w)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
-    reason = parsed.group(4)
+    reason = parsed.group(3)
     # Проверяем на наличие и корректность срока RO
     # Проверяем на наличие причины
     reason = "без указания причины" if not reason else f"по причине: {reason}"
@@ -84,7 +85,7 @@ async def read_only_mode(message: types.Message):
         )
 
     # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
-    except BadRequest as e:
+    except BadRequest:
         # Отправляем сообщение
         await message.answer(
             f"Пользователь {member_mentioned} "
