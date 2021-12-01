@@ -14,7 +14,8 @@ from filters import IsGroup
 from loader import bot, db, dp
 
 
-restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhsd]\b)')
+restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhds]\b)')
+
 
 
 def get_restriction_period(text: str) -> int:
