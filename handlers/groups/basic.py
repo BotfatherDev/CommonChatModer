@@ -13,12 +13,10 @@ from loader import dp
 
 @dp.message_handler(IsGroup(), Command("start", prefixes="!/"))
 async def start(message: types.Message):
-    """Хендлер на команду !/start
-    Выводит список комманд из-за ненужности информации
-    в группе, которая находится в приветствии"""
+    await message.delete()
 
     # Выводим список комманд
-    await help_cmd(message)
+    #await help_cmd(message)
 
 
 @dp.message_handler(IsGroup(), Command("help", prefixes="!/"))
