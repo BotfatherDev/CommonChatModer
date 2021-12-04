@@ -11,7 +11,7 @@ from filters import IsGroup
 from loader import dp
 
 
-@dp.message_handler(IsGroup(), Command("start", prefixes="!/"))
+@dp.message_handler(IsGroup(), text_contains="/start")
 async def start(message: types.Message):
     await message.delete()
 
