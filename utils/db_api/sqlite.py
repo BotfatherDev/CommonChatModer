@@ -36,8 +36,17 @@ class Database:
 
     def create_table_stickers(self):
         sql = """
-        CREATE TABLE BannedStickers(
+        CREATE TABLE IF NOT EXISTS BannedStickers(
             set_name varchar(255) NOT NULL
+            );
+"""
+        self.execute(sql, commit=True)
+
+    def create_table_chat_admins(self):
+        sql = """
+        CREATE TABLE IF NOT EXISTS ChatAdmins(
+            chat_id INTEGER NOT NULL,
+            admin_id INTEGER NOT NULL
             );
 """
         self.execute(sql, commit=True)
@@ -59,6 +68,26 @@ class Database:
         SELECT * FROM BannedStickers
         """
         return self.execute(sql, fetchall=True)
+
+    def select_all_chat_admins(self, chat_id: int):
+        sql = """
+        SELECT admin_id FROM ChatAdmins
+        WHERE chat_id = ?
+        """
+        return self.execute(sql, (chat_id,), fetchall=True)
+
+    def add_chat_admin(self, chat_id: int, admin_id: int):
+        sql = """
+        INSERT INTO ChatAdmins(chat_id, admin_id) VALUES(?, ?)
+        """
+        self.execute(sql, parameters=(chat_id, admin_id), commit=True)
+
+    def del_chat_admin(self, chat_id: int, admin_id: int):
+        sql, parameters = self.format_args(
+            sql="DELETE FROM ChatAdmins WHERE ",
+            parameters={'chat_id': chat_id, 'admin_id': admin_id}
+        )
+        self.execute(sql, parameters=parameters, commit=True)
 
 
 def logger(statement):

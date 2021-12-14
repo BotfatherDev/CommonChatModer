@@ -21,11 +21,17 @@ async def on_startup(dp):
     await on_startup_notify(dp)
     try:
         db.create_table_stickers()
+        db.create_table_chat_admins()
     except Exception as err:
         print(err)
+
     logger.info("Бот запущен")
 
 
 if __name__ == "__main__":
-    executor.start_polling(dp, on_startup=on_startup, skip_updates=SKIP_UPDATES,
-                           allowed_updates=types.AllowedUpdates.all())
+    executor.start_polling(
+        dispatcher=dp,
+        on_startup=on_startup,
+        skip_updates=SKIP_UPDATES,
+        allowed_updates=types.AllowedUpdates.all()
+    )

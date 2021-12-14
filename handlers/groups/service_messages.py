@@ -7,7 +7,7 @@ from data.permissions import (set_new_user_approved_permissions,
 from filters import IsGroup
 from keyboards.inline import (generate_confirm_markup, source_markup,
                               user_callback)
-from loader import bot, dp
+from loader import bot, dp, db
 
 
 
@@ -18,7 +18,7 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
     performer_mention = chat_member_updated.from_user.get_mention(as_html=True)
     member_mention = chat_member_updated.old_chat_member.user.get_mention(as_html=True)
 
-    bot_user = await bot.me
+    bot_user = await dp.bot.me
     if chat_member_updated.from_user.id == bot_user.id:
         return False
 
@@ -54,11 +54,13 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
 
     elif chat_member_updated.new_chat_member.status == types.ChatMemberStatus.ADMINISTRATOR:
         if chat_member_updated.old_chat_member.status != types.ChatMemberStatus.ADMINISTRATOR:
+            db.add_chat_admin(chat_member_updated.chat.id, chat_member_updated.from_user.id)
             text = f'Пользователь {member_mention} был повышен до статуса Администратора чата с титулом: {chat_member_updated.new_chat_member.custom_title}'
         else:
             text = f'Для администратора {member_mention} были изменены права'
 
     elif chat_member_updated.old_chat_member.status == types.ChatMemberStatus.ADMINISTRATOR and chat_member_updated.new_chat_member.status != types.ChatMemberStatus.ADMINISTRATOR:
+        db.del_chat_admin(chat_member_updated.chat.id, chat_member_updated.from_user.id)
         text = f'Администратора {member_mention} понизили до статуса Пользователь'
     else:
         return
