@@ -35,7 +35,8 @@ async def report_user(message: types.Message):
 
             admins = await dp.bot.get_chat_administrators(chat_id)
             for admin in admins:
-                db.add_chat_admin(chat_id, admin.user.id)
+                if admin.user.is_bot is False:
+                    db.add_chat_admin(chat_id, admin.user.id)
 
             chat_admins = db.select_all_chat_admins(chat_id)
 
