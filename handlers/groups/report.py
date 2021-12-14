@@ -1,11 +1,12 @@
-from aiogram import types
+import time
+import asyncio
+from aiogram import types, exceptions
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import hlink
 
-from data.config import ADMINS_ID
 from filters import IsGroup, IsReplyFilter
-from loader import dp, bot
-from utils.misc.display_name import get_display_name
+from loguru import logger
+from loader import dp, db
 
 report_command = Command("report", prefixes={"/", "!"})
 
@@ -13,19 +14,46 @@ report_command = Command("report", prefixes={"/", "!"})
 @dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
 async def report_user(message: types.Message):
     """Отправляет жалобу на пользователя админам"""
-    display_name = get_display_name(message.reply_to_message.from_user)
+    mention = message.reply_to_message.from_user.get_mention()
+    chat_id = message.chat.id
 
     await message.answer(
-        f"Репорт на пользователя {display_name} успешно отправлен.\n"
+        f"Репорт на пользователя {mention} успешно отправлен.\n"
         "Администрация предпримет все необходимые меры"
     )
 
-    for admin_id in ADMINS_ID:
-        await bot.send_message(
-            admin_id,
-            f"Кинут репорт на пользователя {display_name} "
-            "за следующее " + hlink("сообщение", message.reply_to_message.url)
-        )
+    chat_admins = db.select_all_chat_admins(chat_id)
+
+    if not chat_admins:
+        # На всякий случай что бы не было спама
+        data = await dp.storage.get_data(chat=chat_id)
+        if data.get('last_get_admins_time', 0) < time.time():
+            await dp.storage.update_data(
+                chat=chat_id,
+                data={'last_get_admins_time': time.time() + 3600}
+            )
+
+            admins = await dp.bot.get_chat_administrators(chat_id)
+            for admin in admins:
+                if admin.user.is_bot is False:
+                    db.add_chat_admin(chat_id, admin.user.id)
+
+            chat_admins = db.select_all_chat_admins(chat_id)
+
+    for admin in chat_admins:
+        admin_id = admin[0]
+        try:
+            await dp.bot.send_message(
+                chat_id=admin_id,
+                text=f"Кинут репорт на пользователя {mention} "
+                "за следующее " + hlink("сообщение", message.reply_to_message.url)
+            )
+            await asyncio.sleep(0.05)
+        except (exceptions.BotBlocked, exceptions.UserDeactivated, exceptions.CantTalkWithBots, exceptions.CantInitiateConversation):
+            db.del_chat_admin(chat_id, admin_id)
+        except Exception as err:
+            logger.exception("Не предвиденное исключение при рассылке сообщений админам чата при отправке репорта.")
+            logger.exception(err)
 
 
 @dp.message_handler(IsGroup(), report_command)
