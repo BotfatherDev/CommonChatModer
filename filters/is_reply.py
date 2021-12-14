@@ -7,7 +7,7 @@ from aiogram.dispatcher.filters import BoundFilter
 @dataclass
 class IsReplyFilter(BoundFilter):
     """
-    Фильтр, проверяющий, явлляется ли сообщение ответом на сообщение
+    Фильтр, проверяющий, является ли сообщение ответом на сообщение
     """
 
     key = "is_reply"
