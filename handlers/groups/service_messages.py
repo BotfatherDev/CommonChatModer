@@ -41,7 +41,7 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
             chat_member_updated.chat.id,
             text=(
                 f"{member_mention}, добро пожаловать в чат!\n"
-                "Подтверди, что ты не бот, нажатием на кнопку ниже"
+                "Подтверди, что ты не бот, нажатием на кнопку ниже. Внимание! У тебя есть всего одна минута, или я тебя удаляю."
             ),
             reply_markup=generate_confirm_markup(chat_member_updated.new_chat_member.user.id),
         )
