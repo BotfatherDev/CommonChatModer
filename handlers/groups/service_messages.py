@@ -1,6 +1,8 @@
+import asyncio
 import datetime
 
 from aiogram import types
+from aiogram.dispatcher import FSMContext
 
 from data.permissions import (set_new_user_approved_permissions,
                               set_new_user_permissions)
@@ -9,6 +11,10 @@ from keyboards.inline import (generate_confirm_markup, source_markup,
                               user_callback)
 from loader import bot, dp, db
 
+
+@dp.message_handler(content_types="new_chat_members")
+async def on_user_join(message: types.Message, state: FSMContext):
+    await state.update_data(service_message=message)
 
 
 @dp.chat_member_handler()
@@ -23,19 +29,35 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
         return False
 
     if chat_member_updated.new_chat_member.status == types.ChatMemberStatus.MEMBER:
+        state = dp.current_state(chat=chat_member_updated.chat.id,
+                                 user=chat_member_updated.new_chat_member.user.id)
+        await state.update_data(is_active=False)
         await chat_member_updated.bot.restrict_chat_member(
             chat_id=chat_member_updated.chat.id,
             user_id=chat_member_updated.new_chat_member.user.id,
             permissions=set_new_user_permissions(),
         )
-        await chat_member_updated.bot.send_message(
+        message_bot = await chat_member_updated.bot.send_message(
             chat_member_updated.chat.id,
             text=(
                 f"{member_mention}, добро пожаловать в чат!\n"
-                "Подтверди, что ты не бот, нажатием на кнопку ниже"
+                "Подтверди, что ты не бот, нажатием на кнопку ниже. Внимание! У тебя есть всего одна минута, или я тебя удаляю."
             ),
             reply_markup=generate_confirm_markup(chat_member_updated.new_chat_member.user.id),
         )
+        await asyncio.sleep(60)
+        data = await state.get_data()
+        is_active = data.get('is_active')
+        if not is_active:
+            service_message = data.get('service_message')
+            await chat_member_updated.bot.kick_chat_member(chat_member_updated.chat.id,
+                                                           chat_member_updated.new_chat_member.user.id)
+            await chat_member_updated.bot.unban_chat_member(chat_member_updated.chat.id,
+                                                            chat_member_updated.new_chat_member.user.id)
+            await message_bot.delete()
+            await service_message.delete()
+
+        await state.finish()
         return
 
     if chat_member_updated.new_chat_member.status == types.ChatMemberStatus.BANNED:
@@ -72,7 +94,7 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
 
 
 @dp.callback_query_handler(user_callback.filter())
-async def user_confirm(query: types.CallbackQuery, callback_data: dict):
+async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: FSMContext):
     """
     Хэндлер обрабатывающий нажатие на кнопку
     """
@@ -109,6 +131,7 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict):
     await query.message.delete()
     # не забываем выдать юзеру необходимые права
 
+    await state.update_data(is_active=True)
     new_permissions = set_new_user_approved_permissions()
     await bot.restrict_chat_member(
         chat_id=chat_id,
