@@ -42,7 +42,7 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
             ),
             reply_markup=generate_confirm_markup(chat_member_updated.new_chat_member.user.id),
         )
-        await asyncio.sleep(10)
+        await asyncio.sleep(60)
         user = await bot.get_chat_member(chat_id=chat_member_updated.chat.id,
                                          user_id=chat_member_updated.new_chat_member.user.id)
         state = dp.current_state(chat=chat_member_updated.chat.id,
