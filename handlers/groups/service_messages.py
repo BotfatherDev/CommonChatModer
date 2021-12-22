@@ -29,6 +29,9 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
         return False
 
     if chat_member_updated.new_chat_member.status == types.ChatMemberStatus.MEMBER:
+        state = dp.current_state(chat=chat_member_updated.chat.id,
+                                 user=chat_member_updated.new_chat_member.user.id)
+        await state.update_data(is_active=False)
         await chat_member_updated.bot.restrict_chat_member(
             chat_id=chat_member_updated.chat.id,
             user_id=chat_member_updated.new_chat_member.user.id,
@@ -43,12 +46,9 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
             reply_markup=generate_confirm_markup(chat_member_updated.new_chat_member.user.id),
         )
         await asyncio.sleep(60)
-        user = await bot.get_chat_member(chat_id=chat_member_updated.chat.id,
-                                         user_id=chat_member_updated.new_chat_member.user.id)
-        state = dp.current_state(chat=chat_member_updated.chat.id,
-                                 user=chat_member_updated.new_chat_member.user.id)
-        if not user['can_send_messages']:
-            data = await state.get_data()
+        data = await state.get_data()
+        is_active = data.get('is_active')
+        if not is_active:
             service_message = data.get('service_message')
             await chat_member_updated.bot.kick_chat_member(chat_member_updated.chat.id,
                                                            chat_member_updated.new_chat_member.user.id)
@@ -131,6 +131,7 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: F
     await query.message.delete()
     # не забываем выдать юзеру необходимые права
 
+    await state.update_data(is_active=True)
     new_permissions = set_new_user_approved_permissions()
     await bot.restrict_chat_member(
         chat_id=chat_id,
