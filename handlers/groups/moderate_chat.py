@@ -162,9 +162,9 @@ async def ban_user(message: types.Message):
     message_reply = message.reply_to_message
 
     if 'sender_chat' not in message_reply:
-        member_id = message.reply_to_message.from_user.id
-        member_fullname = message.reply_to_message.from_user.full_name
-        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+        member_id = message_reply.from_user.id
+        member_fullname = message_reply.from_user.full_name
+        member_mentioned = message_reply.from_user.get_mention(as_html=True)
 
         try:
             # Пытаемся удалить пользователя из чата
@@ -187,8 +187,8 @@ async def ban_user(message: types.Message):
 
             logger.info(f"Бот не смог забанить пользователя {member_fullname}")
     else:
-        sender_chat_title = message.reply_to_message.sender_chat.title
-        sender_chat_id = message.reply_to_message.sender_chat.id
+        sender_chat_title = message_reply.sender_chat.title
+        sender_chat_id = message_reply.sender_chat.id
 
         await message.chat.ban_sender_chat(sender_chat_id)
         await message.answer(
@@ -224,9 +224,9 @@ async def unban_user(message: types.Message):
     message_reply = message.reply_to_message
 
     if 'sender_chat' not in message_reply:
-        member_id = message.reply_to_message.from_user.id
-        member_username = message.reply_to_message.from_user.username
-        member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+        member_id = message_reply.from_user.id
+        member_username = message_reply.from_user.username
+        member_mentioned = message_reply.from_user.get_mention(as_html=True)
 
         await message.chat.unban(user_id=member_id)
         await message.answer(
@@ -236,8 +236,8 @@ async def unban_user(message: types.Message):
             f"Пользователь @{member_username} был разбанен админом @{admin_username}"
         )
     else:
-        sender_chat_title = message.reply_to_message.sender_chat.title
-        sender_chat_id = message.reply_to_message.sender_chat.id
+        sender_chat_title = message_reply.sender_chat.title
+        sender_chat_id = message_reply.sender_chat.id
 
         await message.chat.unban_sender_chat(sender_chat_id)
         await message.answer(
