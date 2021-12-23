@@ -93,7 +93,7 @@ async def read_only_mode(message: types.Message):
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог замутить пользователя @{member_username}")
     service_message = await message.reply(
-        'Сообщение самоуничтожиться через 5 секунд.'
+        'Сообщение самоуничтожится через 5 секунд.'
     )
 
     await asyncio.sleep(5)
@@ -131,7 +131,7 @@ async def undo_read_only_mode(message: types.Message):
     await message.answer(
         f"Пользователь {member_mentioned} был размучен администратором {admin_mentioned}"
     )
-    service_message = await message.reply("Сообщение самоуничтожиться через 5 секунд.")
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # Не забываем про лог
     logger.info(
@@ -198,7 +198,7 @@ async def ban_user(message: types.Message):
             f"Канал '{sender_chat_title}' был забанен админом {admin_fullname}"
         )
 
-    service_message = await message.reply("Сообщение самоуничтожиться через 5 секунд.")
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
 
     # После чего засыпаем на 5 секунд
     await asyncio.sleep(5)
@@ -247,7 +247,7 @@ async def unban_user(message: types.Message):
             f"Канал '{sender_chat_title}' был разбанен админом {admin_fullname}"
         )
 
-    service_message = await message.reply("Сообщение самоуничтожиться через 5 секунд.")
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
     # Пауза 5 сек
     await asyncio.sleep(5)
     # Удаляем сообщения
@@ -314,7 +314,7 @@ async def media_false_handler(message: types.Message):
 
     # Отправляем сообщение
     await message.answer(text=answer_text)
-    service_message = await message.reply("Сообщение самоуничтожиться через 5 секунд")
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд")
     await asyncio.sleep(5)
     await message.reply_to_message.delete()
     await message.delete()
@@ -381,7 +381,7 @@ async def media_true_handler(message: types.Message):
         # Вносим информацию о муте в лог
         logger.info(f"Бот не смог вернуть права пользователю @{member_username}")
 
-    service_message = await message.reply(f"Сообщение самоуничтожиться через 5 секунд.")
+    service_message = await message.reply(f"Сообщение самоуничтожится через 5 секунд.")
     await asyncio.sleep(5)
     await message.delete()
     await service_message.delete()
