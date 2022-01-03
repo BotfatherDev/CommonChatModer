@@ -13,7 +13,9 @@ from data.permissions import (set_new_user_approved_permissions,
 from filters import IsGroup
 from loader import bot, db, dp
 
+
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhds]\b)')
+
 
 
 def get_restriction_period(text: str) -> int:
@@ -38,8 +40,8 @@ def get_restriction_period(text: str) -> int:
 async def read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
     :time int: время на которое нужно замутить пользователя в минутах
-    :reason str: причина мута. При отсутствии времени и/или причины, то
-    используются стандартные значения: 5 минут и None для времени и причины соответственно"""
+    :reason str: причина мута. При отсуствии времени и/или причины, то
+    используються стандартные значения: 5 минут и None для времени и причины соответсвенно"""
 
     # Создаем переменные для удобства
     (
@@ -79,8 +81,7 @@ async def read_only_mode(message: types.Message):
 
         # Вносим информацию о муте в лог
         logger.info(
-            f"Пользователю @{member_username} запрещено писать сообщения до "
-            f"{ro_end_date.strftime('%d.%m.%Y %H:%M')} админом @{admin_username} "
+            f"Пользователю @{member_username} запрещено писать сообщения до {ro_end_date.strftime('%d.%m.%Y %H:%M')} админом @{admin_username} "
         )
 
     # Если бот не может замутить пользователя (администратора), возникает ошибка BadRequest которую мы обрабатываем
@@ -151,6 +152,45 @@ async def undo_read_only_mode(message: types.Message):
     Command(commands=["ban"], prefixes="!/"),
     is_reply=True,
     user_can_restrict_members=True,
+    reply_msg_is_channel=True
+)
+async def ban_channel(message: types.Message):
+    from_user = message.from_user
+    sender_chat = message.reply_to_message.sender_chat
+
+    admin_fullname = from_user.full_name
+    admin_mentioned = from_user.get_mention()
+
+    member_id = sender_chat.id
+    member_fullname = sender_chat.title
+    member_mentioned = sender_chat.get_mention()
+
+    try:
+        await message.chat.ban_sender_chat(member_id)
+
+        await message.answer(
+            f"Канал {member_mentioned} был успешно забанен администратором {admin_mentioned}\n"
+            f"Теперь владелец канала не сможет писать от имени любого из своих каналов"
+        )
+
+        logger.info(f"Канал {member_fullname} был забанен админом {admin_fullname}")
+    except BadRequest:
+        logger.info(f"Бот не смог забанить канал {member_fullname}")
+
+    service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
+
+    await asyncio.sleep(5)
+
+    await message.reply_to_message.delete()
+    await message.delete()
+    await service_message.delete()
+
+
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["ban"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
 )
 async def ban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
@@ -162,21 +202,15 @@ async def ban_user(message: types.Message):
     member_fullname = message.reply_to_message.from_user.full_name
     member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
     try:
-        if message.sender_chat and message.is_automatic_forward is None and message.sender_chat.id != message.chat.id:
-            member_id = message.sender_chat.id
-            member_fullname = message.sender_chat.title
-            member_mentioned = message.sender_chat.get_mention(as_html=True)
-
-            await message.chat.ban_sender_chat(member_id)
-        else:
-            # Пытаемся удалить пользователя из чата
-            await message.chat.kick(user_id=member_id)
+        # Пытаемся удалить пользователя из чата
+        await message.chat.kick(user_id=member_id)
         # Информируем об этом
         await message.answer(
-            f"Канал '{sender_chat_title}' был успешно забанен администратором {admin_mentioned}"
+            f"Пользователь {member_mentioned} был успешно забанен администратором {admin_mentioned}"
         )
+        # Об успешном бане информируем разработчиков в лог
         logger.info(
-            f"Канал '{sender_chat_title}' был забанен админом {admin_fullname}"
+            f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
         )
     except BadRequest:
         # Отправляем сообщение
@@ -188,6 +222,7 @@ async def ban_user(message: types.Message):
         logger.info(f"Бот не смог забанить пользователя {member_fullname}")
 
     service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
+
     # После чего засыпаем на 5 секунд
     await asyncio.sleep(5)
     # Не забываем удалить сообщение, на которое ссылался администратор
@@ -201,43 +236,73 @@ async def ban_user(message: types.Message):
     Command(commands=["unban"], prefixes="!/"),
     is_reply=True,
     user_can_restrict_members=True,
+    reply_msg_is_channel=True
+)
+async def unban_channel(message: types.Message):
+    from_user = message.from_user
+    sender_chat = message.reply_to_message.sender_chat
+
+    admin_username = from_user.username
+    admin_mentioned = from_user.get_mention()
+
+    member_id = sender_chat.id
+    member_username = sender_chat.username
+    member_mentioned = sender_chat.get_mention()
+
+    try:
+        await message.chat.unban_sender_chat(member_id)
+    except BadRequest:
+        return
+
+    await message.answer(
+        f"Канал {member_mentioned} был разбанен администратором {admin_mentioned}\n"
+        f"Теперь владелец канала сможет писать от имени любого из своих каналов"
+    )
+    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
+
+    logger.info(
+        f"Канал @{member_username} был забанен админом @{admin_username}"
+    )
+
+    await asyncio.sleep(5)
+
+    await message.delete()
+    await service_message.delete()
+
+
+@dp.message_handler(
+    IsGroup(),
+    Command(commands=["unban"], prefixes="!/"),
+    is_reply=True,
+    user_can_restrict_members=True,
 )
 async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
+
     # Создаем переменные для удобства
     admin_username = message.from_user.username
-    admin_fullname = message.from_user.full_name
     admin_mentioned = message.from_user.get_mention(as_html=True)
+    member_id = message.reply_to_message.from_user.id
+    member_username = message.reply_to_message.from_user.username
+    member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
 
-    message_reply = message.reply_to_message
+    # И разбаниваем
+    await message.chat.unban(user_id=member_id)
 
-    if 'sender_chat' not in message_reply:
-        member_id = message_reply.from_user.id
-        member_username = message_reply.from_user.username
-        member_mentioned = message_reply.from_user.get_mention(as_html=True)
-
-        await message.chat.unban(user_id=member_id)
-        await message.answer(
-            f"Пользователь {member_mentioned} был разбанен администратором {admin_mentioned}"
-        )
-        logger.info(
-            f"Пользователь @{member_username} был разбанен админом @{admin_username}"
-        )
-    else:
-        sender_chat_title = message_reply.sender_chat.title
-        sender_chat_id = message_reply.sender_chat.id
-
-        await message.chat.unban_sender_chat(sender_chat_id)
-        await message.answer(
-            f"Канал '{sender_chat_title}' был успешно разбанен администратором {admin_mentioned}"
-        )
-        logger.info(
-            f"Канал '{sender_chat_title}' был разбанен админом {admin_fullname}"
-        )
-
+    # Пишем в чат
+    await message.answer(
+        f"Пользователь {member_mentioned} был разбанен администратором {admin_mentioned}"
+    )
     service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
+
     # Пауза 5 сек
     await asyncio.sleep(5)
+
+    # Записываем в логи
+    logger.info(
+        f"Пользователь @{member_username} был забанен админом @{admin_username}"
+    )
+
     # Удаляем сообщения
     await message.delete()
     await service_message.delete()
