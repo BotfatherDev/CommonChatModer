@@ -163,8 +163,15 @@ async def ban_user(message: types.Message):
     member_fullname = message.reply_to_message.from_user.full_name
     member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
     try:
-        # Пытаемся удалить пользователя из чата
-        await message.chat.kick(user_id=member_id)
+        if message.sender_chat and message.is_automatic_forward is None and message.sender_chat.id != message.chat.id:
+            member_id = message.sender_chat.id
+            member_fullname = message.sender_chat.title
+            member_mentioned = message.sender_chat.get_mention(as_html=True)
+
+            await message.chat.ban_sender_chat(member_id)
+        else:
+            # Пытаемся удалить пользователя из чата
+            await message.chat.kick(user_id=member_id)
         # Информируем об этом
         await message.answer(
             f"Пользователь {member_mentioned} был успешно забанен администратором {admin_mentioned}"
@@ -174,7 +181,6 @@ async def ban_user(message: types.Message):
             f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
         )
     except BadRequest:
-
         # Отправляем сообщение
         await message.answer(
             f"Пользователь {member_mentioned} "
