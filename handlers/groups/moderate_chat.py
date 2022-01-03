@@ -158,48 +158,36 @@ async def ban_user(message: types.Message):
     # Создаем переменные для удобства
     admin_fullname = message.from_user.full_name
     admin_mentioned = message.from_user.get_mention(as_html=True)
+    member_id = message.reply_to_message.from_user.id
+    member_fullname = message.reply_to_message.from_user.full_name
+    member_mentioned = message.reply_to_message.from_user.get_mention(as_html=True)
+    try:
+        if message.sender_chat and message.is_automatic_forward is None and message.sender_chat.id != message.chat.id:
+            member_id = message.sender_chat.id
+            member_fullname = message.sender_chat.title
+            member_mentioned = message.sender_chat.get_mention(as_html=True)
 
-    message_reply = message.reply_to_message
-
-    if 'sender_chat' not in message_reply:
-        member_id = message_reply.from_user.id
-        member_fullname = message_reply.from_user.full_name
-        member_mentioned = message_reply.from_user.get_mention(as_html=True)
-
-        try:
+            await message.chat.ban_sender_chat(member_id)
+        else:
             # Пытаемся удалить пользователя из чата
             await message.chat.kick(user_id=member_id)
-            # Информируем об этом
-            await message.answer(
-                f"Пользователь {member_mentioned} был успешно забанен администратором {admin_mentioned}"
-            )
-            # Об успешном бане информируем разработчиков в лог
-            logger.info(
-                f"Пользователь {member_fullname} был забанен админом {admin_fullname}"
-            )
-        except BadRequest:
-
-            # Отправляем сообщение
-            await message.answer(
-                f"Пользователь {member_mentioned} "
-                "является администратором чата, я не могу выдать ему RO"
-            )
-
-            logger.info(f"Бот не смог забанить пользователя {member_fullname}")
-    else:
-        sender_chat_title = message_reply.sender_chat.title
-        sender_chat_id = message_reply.sender_chat.id
-
-        await message.chat.ban_sender_chat(sender_chat_id)
+        # Информируем об этом
         await message.answer(
             f"Канал '{sender_chat_title}' был успешно забанен администратором {admin_mentioned}"
         )
         logger.info(
             f"Канал '{sender_chat_title}' был забанен админом {admin_fullname}"
         )
+    except BadRequest:
+        # Отправляем сообщение
+        await message.answer(
+            f"Пользователь {member_mentioned} "
+            "является администратором чата, я не могу выдать ему RO"
+        )
 
-    service_message = await message.reply("Сообщение самоуничтожится через 5 секунд.")
+        logger.info(f"Бот не смог забанить пользователя {member_fullname}")
 
+    service_message = await message.answer("Сообщение самоуничтожится через 5 секунд.")
     # После чего засыпаем на 5 секунд
     await asyncio.sleep(5)
     # Не забываем удалить сообщение, на которое ссылался администратор
