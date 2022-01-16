@@ -30,6 +30,8 @@ async def add_rating_handler(m: Message):
     if not cached:
         return await m.delete()
 
+    mention_reply = m.reply_to_message.from_user.get_mention(m.reply_to_message.from_user.first_name, True)
+    mention_from = m.from_user.get_mention(m.from_user.first_name)
     ratings = {
         "+": 1,
         "-": -1
@@ -37,10 +39,10 @@ async def add_rating_handler(m: Message):
     rating_user = get_rating(helper_id, ratings.get(m.text))
 
     if m.text == "+":
-        text = f"{m.from_user.mention} <b>повысил рейтинг на 1 пользователю</b> {m.reply_to_message.from_user.mention}😳\n" \
+        text = f"{mention_from} <b>повысил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n" \
                f"<b>Текущий рейтинг: {rating_user}</b>"
     else:
-        text = f"{m.from_user.mention} <b>понизил рейтинг на 1 пользователю</b> {m.reply_to_message.from_user.mention}\n 😳" \
+        text = f"{mention_from} <b>понизил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n" \
                f"<b>Текущий рейтинг: {rating_user}</b>"
 
     await m.answer(text)
