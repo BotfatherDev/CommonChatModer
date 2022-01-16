@@ -13,7 +13,7 @@ async def set_default_commands(dp: Dispatcher):
     commands_members = {
         "gay": "Узнать, на сколько % пользователь гей",
         "biba": "Узнать сколько см у пользователя биба",
-        "top_helpers": "Вывод топ хелперов"
+        "top_helpers": "Узнать топ хелперов"
     }
     command_defaults = {
         'help': 'Help me'
