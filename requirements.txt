@@ -1,5 +1,6 @@
 aiogram~=2.14
 aioredis>=2.0.1
+async_lru
 loguru~=0.5.2
 environs==9.4.0
 emoji==1.6.1

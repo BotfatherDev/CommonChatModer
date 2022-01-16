@@ -22,6 +22,7 @@ async def on_startup(dp):
     try:
         db.create_table_stickers()
         db.create_table_chat_admins()
+        db.create_table_rating_users()
     except Exception as err:
         print(err)
 

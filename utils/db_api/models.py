@@ -18,3 +18,5 @@ class Student(db.Model):
     progress = Column(Integer)
     questions_asked = Column(Integer)
     questions_answered = Column(Integer)
+
+
