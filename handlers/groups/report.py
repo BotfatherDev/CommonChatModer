@@ -14,7 +14,15 @@ report_command = Command("report", prefixes={"/", "!"})
 @dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
 async def report_user(message: types.Message):
     """Отправляет жалобу на пользователя админам"""
-    mention = message.reply_to_message.from_user.get_mention()
+
+    reply = message.reply_to_message
+
+    # Проверка на то что реплай сообщение написано от имени канала
+    if reply.is_automatic_forward is None and reply.sender_chat.id != message.chat.id:
+        mention = message.sender_chat.get_mention()
+    else:
+        mention = message.reply_to_message.from_user.get_mention()
+
     chat_id = message.chat.id
 
     await message.answer(
