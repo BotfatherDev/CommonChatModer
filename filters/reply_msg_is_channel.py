@@ -15,7 +15,6 @@ class ReplyMsgIsChannelFilter(BoundFilter):
 
     async def check(self, message: types.Message) -> bool:
         reply = message.reply_to_message
-
         if not reply:
             return False
         if not reply.sender_chat:
