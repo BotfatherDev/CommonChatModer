@@ -18,7 +18,7 @@ async def report_user(message: types.Message):
     reply = message.reply_to_message
 
     # Проверка на то что реплай сообщение написано от имени канала
-    if reply.is_automatic_forward is None and reply.sender_chat.id != message.chat.id:
+    if reply.sender_chat and reply.is_automatic_forward is None and reply.sender_chat.id != message.chat.id:
         mention = message.sender_chat.get_mention()
     else:
         mention = message.reply_to_message.from_user.get_mention()
