@@ -64,6 +64,8 @@ async def get_top_helpers(m: Message):
     ]
     random.shuffle(emoji_for_top)
 
+    helpers = [helper for helper in helpers if helper[1] != 0]
+
     text = """
 Топ Хелперов:
 {tops}
@@ -71,7 +73,7 @@ async def get_top_helpers(m: Message):
         tops="\n".join([
 
             f"<b>{number}) {emoji_for_top[number-1]} {await get_profile(helper[0])} ( {helper[1]} )</b> " for number, helper in
-            enumerate(helpers, 1) if helper[1] != 0]
+            enumerate(helpers, 1)]
         )
     )
     await m.answer(text)
