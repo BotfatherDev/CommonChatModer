@@ -19,6 +19,8 @@ import handlers
 async def on_startup(dp):
     await set_default_commands(dp)
     await on_startup_notify(dp)
+    
+    db.drop_table('RatingUsers')
     try:
         db.create_table_stickers()
         db.create_table_chat_admins()

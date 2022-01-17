@@ -97,10 +97,13 @@ class Database(BaseDatabase):
         sql = """
         CREATE TABLE IF NOT EXISTS RatingUsers(
         user_id BIGINTEGER NOT NULL, 
-        name string NOT NULL,
         rating INTEGER DEFAULT 0
         );
         """
+        self.execute(sql, commit=True)
+
+    def drop_table(self, name):
+        sql = f"DROP TABLE {name}"
         self.execute(sql, commit=True)
 
     def add_user_for_rating(self, user_id):
