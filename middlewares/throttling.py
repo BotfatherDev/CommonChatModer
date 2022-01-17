@@ -15,6 +15,7 @@ class ThrottlingMiddleware(BaseMiddleware):
     def __init__(self, limit=DEFAULT_RATE_LIMIT, key_prefix="antiflood_"):
         self.rate_limit = limit
         self.prefix = key_prefix
+        self.service_text = 'Too many requests!'
         super(ThrottlingMiddleware, self).__init__()
 
     # noinspection PyUnusedLocal
@@ -38,11 +39,14 @@ class ThrottlingMiddleware(BaseMiddleware):
         dispatcher = Dispatcher.get_current()
         if handler:
             key = getattr(handler, 'throttling_key', f"{self.prefix}_{handler.__name__}")
+            text = getattr(handler, "throttling_text", self.service_text)
         else:
+            text = self.service_text
             key = f"{self.prefix}_message"
         delta = throttled.rate - throttled.delta
+
         if throttled.exceeded_count <= 2:
-            service_message = await message.reply('Too many requests! ')
+            service_message = await message.reply(text)
 
             await asyncio.sleep(5)
             await service_message.delete()

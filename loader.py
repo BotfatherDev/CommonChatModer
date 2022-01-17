@@ -9,4 +9,3 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 db = Database(path_to_db="data/main.db")
 cache_rating = {}
-cache_helpers = {}

@@ -10,4 +10,4 @@ services:
     volumes:
     - .:/src
     env_file:
-      - ".env.dist"
+      - ".env"

@@ -7,10 +7,12 @@ from async_lru import alru_cache
 
 from filters import IsGroup
 from loader import db, dp, bot
+from utils.misc import rate_limit
 
 from utils.misc.rating import caching_rating, get_rating
 
 
+@rate_limit(limit=60, key='rating', text="Вы не можете так часто начислять рейтинг. (<i>Сообщение автоматически удалится</i>")
 @dp.message_handler(
     IsGroup(),
     IsReplyFilter(True),
@@ -23,10 +25,7 @@ async def add_rating_handler(m: Message):
     if m.bot.id == helper_id or user_id == helper_id:
         return await m.delete()
 
-    cached = caching_rating(m, helper_id, user_id, message_id)
-    if cached == "flood":
-        return await m.delete()
-
+    cached = caching_rating(helper_id, user_id, message_id)
     if not cached:
         return await m.delete()
 
