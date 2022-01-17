@@ -12,7 +12,8 @@ from utils.misc import rate_limit
 from utils.misc.rating import caching_rating, get_rating
 
 
-@rate_limit(limit=60, key='rating', text="Вы не можете так часто начислять рейтинг. (<i>Сообщение автоматически удалится</i>")
+@rate_limit(limit=30, key='rating',
+            text="Вы не можете так часто начислять рейтинг. (<i>Сообщение автоматически удалится</i>")
 @dp.message_handler(
     IsGroup(),
     IsReplyFilter(True),
@@ -54,6 +55,7 @@ async def get_profile(user_id) -> Chat:
     return chat.full_name
 
 
+@rate_limit(limit=30, key="top_helpers")
 @dp.message_handler(commands=['top_helpers'])
 async def get_top_helpers(m: Message):
     helpers = db.get_top_by_rating()
@@ -68,8 +70,8 @@ async def get_top_helpers(m: Message):
 """.format(
         tops="\n".join([
 
-            f"<b>{emoji_for_top[number]} {await get_profile(helper[0])} - {helper[1]}</b> " for number, helper in
-            enumerate(helpers, 0)]
+            f"<b>{number}) {emoji_for_top[number-1]} {await get_profile(helper[0])} ( {helper[1]} )</b> " for number, helper in
+            enumerate(helpers, 1) if helper[1] != 0]
         )
     )
     await m.answer(text)
