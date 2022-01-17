@@ -4,6 +4,7 @@ from loguru import logger
 from .chat_filters import IsGroup, IsPrivate
 from .has_permissions import HasPermissions
 from .is_reply import IsReplyFilter
+from .reply_msg_is_channel import ReplyMsgIsChannelFilter
 from .user_filters import IsContributor
 
 
@@ -21,3 +22,4 @@ def setup(dp: Dispatcher):
     dp.filters_factory.bind(IsContributor)
     dp.filters_factory.bind(IsGroup)
     dp.filters_factory.bind(IsPrivate)
+    dp.filters_factory.bind(ReplyMsgIsChannelFilter)

@@ -131,3 +131,4 @@ dmypy.json
 
 # Redis dumps
 dump.rdb
+/data/main.db
