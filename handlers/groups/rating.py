@@ -62,9 +62,8 @@ async def get_top_helpers(m: Message):
     emoji_for_top = [
         "🐤", "🐙", "🐮", "🐻", "🐼", "🐸", "🐰", "🦊", "🦁", "🙈", "🦕"
     ]
-    random.shuffle(emoji_for_top)
 
-    helpers = [helper for helper in helpers if helper[1] != 0]
+    helpers = [helper for helper in helpers if helper[1] > 0]
 
     text = """
 Топ Хелперов:
