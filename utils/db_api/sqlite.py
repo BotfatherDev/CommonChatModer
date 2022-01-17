@@ -97,15 +97,14 @@ class Database(BaseDatabase):
         sql = """
         CREATE TABLE IF NOT EXISTS RatingUsers(
         user_id BIGINTEGER NOT NULL, 
-        name string NOT NULL,
         rating INTEGER DEFAULT 0
         );
         """
         self.execute(sql, commit=True)
 
-    def add_user_for_rating(self, user_id):
-        sql = "INSERT INTO RatingUsers (user_id) VALUES (?)"
-        self.execute(sql, parameters=(user_id,), commit=True)
+    def add_user_for_rating(self, user_id, rating: int):
+        sql = "INSERT INTO RatingUsers (user_id, rating) VALUES (?, ?)"
+        self.execute(sql, parameters=(user_id, rating), commit=True)
 
     def get_rating_by_user_id(self, user_id: int):
         sql, parameters = self.format_args(
