@@ -20,7 +20,7 @@ from utils.misc.rating import caching_rating, get_rating
     text=["+", "-"])
 async def add_rating_handler(m: Message):
     helper_id = m.reply_to_message.from_user.id  # айди хелпера
-    if helper_id == 362089194:
+    if helper_id == 362089194 and m.text == '-':
         m.answer_photo(photo='https://memepedia.ru/wp-content/uploads/2019/02/uno-meme-1.jpg', caption='Вы не можете это сделать. Ваш удар был направлен против вас')
         helper_id = m.from_user.id
     user_id = m.from_user.id  # айди, который поставил + или -
