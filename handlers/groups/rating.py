@@ -4,12 +4,21 @@ import random
 from aiogram.dispatcher.filters import IsReplyFilter
 from aiogram.types import Message, Chat
 from async_lru import alru_cache
+from loader import db
 
 from filters import IsGroup
 from loader import db, dp, bot
 from utils.misc import rate_limit
 
 from utils.misc.rating import caching_rating, get_rating
+
+@dp.message_handler(
+    IsGroup(),
+    text='/reset_rating', user_id=362089194)
+async def reset_rating_handler(m: Message):
+    db.drop_table('RatingUsers')
+    db.create_table_rating_users()
+    await m.reply('Готово')
 
 
 @rate_limit(limit=30, key='rating',
@@ -34,7 +43,7 @@ async def add_rating_handler(m: Message):
     if helper_id == 362089194 and m.text == '-':
         m.answer_photo(photo='https://memepedia.ru/wp-content/uploads/2019/02/uno-meme-1.jpg', caption='Вы не можете это сделать. Ваш удар был направлен против вас')
         helper_id = m.from_user.id
-        
+
     mention_reply = m.reply_to_message.from_user.get_mention(m.reply_to_message.from_user.first_name, True)
     mention_from = m.from_user.get_mention(m.from_user.first_name)
     ratings = {

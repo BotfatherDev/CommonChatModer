@@ -51,6 +51,11 @@ class Database(BaseDatabase):
             );
 """
         self.execute(sql, commit=True)
+        
+    def drop_table(self, name):
+        
+        sql = f"DROP TABLE {name}"
+        self.execute(sql, commit=True)
 
     def create_table_chat_admins(self):
         sql = """
