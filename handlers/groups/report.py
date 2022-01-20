@@ -17,8 +17,13 @@ async def report_user(message: types.Message):
 
     reply = message.reply_to_message
 
+    # Если юзер репортит на сообщение из канала, то пропускаем это
+    if reply.is_automatic_forward is True:
+        await message.delete()
+        return
+
     # Проверка на то что реплай сообщение написано от имени канала
-    if reply.sender_chat and reply.is_automatic_forward is None:
+    if reply.sender_chat:
         mention = reply.sender_chat.title
     else:
         mention = reply.from_user.get_mention()
