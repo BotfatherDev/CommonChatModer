@@ -75,9 +75,9 @@ async def biba(message: types.Message):
         await message.reply(f'У {target} нет бибы, только грудь!')
         return
     # отправляем
-    emojis= ['😔','😋', '😏', '🤤', '🥸']
+    emojis= ['🥲', '😔','😋', '😏', '🤤', '🥸']
     emoji = ''
-    for size, selected_emoji in zip((5, 10, 15, 20, 25), emojis):
+    for size, selected_emoji in zip((1, 5, 10, 15, 20, 25), emojis):
         if length <= size:
             break
 
