@@ -70,9 +70,20 @@ async def biba(message: types.Message):
         target = message.reply_to_message.from_user.get_mention(as_html=True)
     else:
         target = message.from_user.get_mention(as_html=True)
-
+    
+    if message.from_user.first_name.endswith('на'):
+        await message.reply(f'У {target} нет бибы, только грудь!')
+        return
     # отправляем
-    await message.reply(f"🤤 У {target} биба {length} см")
+    emojis= ['😔','😋', '😏', '🤤', '🥸']
+    emoji = ''
+    for size, selected_emoji in zip((5, 10, 15, 20, 25), emojis):
+        if length <= size:
+            break
+
+        emoji = selected_emoji
+        
+    await message.reply(f"{emoji} У {target} биба {length} см")
 
 
 @rate_limit(10, "fun")
