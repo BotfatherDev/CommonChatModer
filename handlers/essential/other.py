@@ -71,8 +71,8 @@ async def biba(message: types.Message):
     else:
         target = message.from_user.get_mention(as_html=True)
     
-    if message.from_user.first_name.endswith('на'):
-        await message.reply(f'У {target} нет бибы, только грудь!')
+    if message.from_user.first_name.endswith('на') or message.from_user.first_name.endswith('na'):
+        await message.reply(f'У {target} грудь {length//5} размера.')
         return
     # отправляем
     emojis= ['🥲', '😔','😋', '😏', '🤤', '🥸']
