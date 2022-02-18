@@ -72,7 +72,7 @@ async def biba(message: types.Message):
         target = message.from_user.get_mention(as_html=True)
     women_name_endings = ['sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia']
     for ending in women_name_endings:
-        if message.from_user.first_name.endswith(ending):
+        if re.match(f'\w+({ending})[^\w]+?', message.from_user.first_name):
             await message.reply(f'У {target} грудь {length//5} размера.')
             return
     # отправляем
