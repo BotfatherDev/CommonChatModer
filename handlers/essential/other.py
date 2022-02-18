@@ -70,10 +70,11 @@ async def biba(message: types.Message):
         target = message.reply_to_message.from_user.get_mention(as_html=True)
     else:
         target = message.from_user.get_mention(as_html=True)
-    
-    if message.from_user.first_name.endswith('на') or message.from_user.first_name.endswith('na'):
-        await message.reply(f'У {target} грудь {length//5} размера.')
-        return
+    women_name_endings = ['sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia']
+    for ending in women_name_endings:
+        if message.from_user.first_name.endswith(ending):
+            await message.reply(f'У {target} грудь {length//5} размера.')
+            return
     # отправляем
     emojis= ['🥲', '😔','😋', '😏', '🤤', '🥸']
     emoji = ''
