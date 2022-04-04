@@ -56,7 +56,7 @@ async def report_user(message: types.Message):
     chat_admins = {admin[0] for admin in chat_admins}
 
     for admin in chat_admins:
-        admin_id = admin[0]
+        admin_id = admin
         try:
             await dp.bot.send_message(
                 chat_id=admin_id,
