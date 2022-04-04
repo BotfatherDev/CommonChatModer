@@ -52,7 +52,7 @@ async def report_user(message: types.Message):
                     db.add_chat_admin(chat_id, admin.user.id)
 
             chat_admins = db.select_all_chat_admins(chat_id)
-    logger.info(f"Администраторы канала {chat_id}: {chat_admins}")
+    logger.info(f"Администраторы группы {chat_id}: {chat_admins}")
     chat_admins = {admin[0] for admin in chat_admins}
 
     for admin in chat_admins:
