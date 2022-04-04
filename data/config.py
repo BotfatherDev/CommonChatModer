@@ -12,6 +12,11 @@ ADMINS_ID = env.list("ADMINS_ID")
 REDIS_HOST = env("REDIS_HOST", "127.0.0.1")
 REDIS_PORT = env("REDIS_PORT", 6379)
 
+WEBHOOK = env.bool("WEBHOOK", False)
+WEBHOOK_HOST = env.str("WEBHOOK_HOST")
+WEBHOOK_PATH = env.str("WEBHOOK_PATH")
+WEBAPP_PORT = env.int("WEBAPP_PORT")
+
 aiogram_redis = {
     "host": REDIS_HOST,
 }
