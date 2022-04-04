@@ -79,16 +79,16 @@ async def answer_age(message: types.Message, state: FSMContext):
     await Metabolism.activity.set()
 
 
-@dp.message_handler(state=Metabolism.activity)
-@dp.callback_query_handler(activity_callback.filter())
-async def answer_activity(call: CallbackQuery, callback_data: dict, state: FSMContext):
-    await call.message.edit_reply_markup(reply_markup=None)
+@dp.callback_query_handler(activity_callback.filter(), state=Metabolism.activity)
+async def answer_activity(call: CallbackQuery, state: FSMContext, callback_data: dict = None):
+    if isinstance(call, types.CallbackQuery):
+        await call.message.edit_reply_markup(reply_markup=None)
 
-    coefficient = callback_data.get("coefficient")
-    await state.update_data(activity=float(coefficient))
+        coefficient = callback_data.get("coefficient")
+        await state.update_data(activity=float(coefficient))
 
-    description = callback_data.get("description")
-    await call.message.answer(text=f"{description}\n\n")
+        description = callback_data.get("description")
+        await call.message.answer(text=f"{description}\n\n")
 
     # Достаем переменные
     data = await state.get_data()
