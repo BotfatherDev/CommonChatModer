@@ -63,7 +63,8 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
     if chat_member_updated.new_chat_member.status == types.ChatMemberStatus.BANNED:
         text = f"{member_mention} был удален из чата пользователем {performer_mention}."
 
-    elif chat_member_updated.new_chat_member.status == types.ChatMemberStatus.RESTRICTED and chat_member_updated.old_chat_member.status == types.ChatMemberStatus.ADMINISTRATOR:
+    elif chat_member_updated.new_chat_member.status == types.ChatMemberStatus.RESTRICTED \
+            and chat_member_updated.old_chat_member.status == types.ChatMemberStatus.ADMINISTRATOR:
         text = f"Для пользователя {member_mention} были изменены права пользователем {performer_mention}."
 
     # Проверяем вышел ли пользователь сам
@@ -77,7 +78,8 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
     elif chat_member_updated.new_chat_member.status == types.ChatMemberStatus.ADMINISTRATOR:
         if chat_member_updated.old_chat_member.status != types.ChatMemberStatus.ADMINISTRATOR:
             db.add_chat_admin(chat_member_updated.chat.id, chat_member_updated.from_user.id)
-            text = f'Пользователь {member_mention} был повышен до статуса Администратора чата с титулом: {chat_member_updated.new_chat_member.custom_title}'
+            text = f'Пользователь {member_mention} был повышен до статуса Администратора чата с титулом: ' \
+                   f'{chat_member_updated.new_chat_member.custom_title or "Без титула"}.'
         else:
             text = f'Для администратора {member_mention} были изменены права'
 
