@@ -65,8 +65,8 @@ async def report_user(message: types.Message):
                 text=f"Кинут репорт на пользователя {mention} "
                      "за следующее " + hlink("сообщение", message.reply_to_message.url),
                 reply_markup=report_reactions_keyboard(
-                    message.reply_to_message.chat.id,
                     message.reply_to_message.from_user.id,
+                    message.reply_to_message.chat.id,
                     message.reply_to_message.message_id)
             )
             await asyncio.sleep(0.05)
