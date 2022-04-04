@@ -105,5 +105,7 @@ async def report_user_callback(call: types.CallbackQuery, callback_data: dict):
             )
         elif action == 'delete':
             await call.bot.delete_message(chat_id, message_id)
+    except Exception as e:
+        logger.exception(e)
     finally:
         await call.message.delete_reply_markup()
