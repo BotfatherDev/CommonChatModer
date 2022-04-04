@@ -52,6 +52,8 @@ async def report_user(message: types.Message):
                     db.add_chat_admin(chat_id, admin.user.id)
 
             chat_admins = db.select_all_chat_admins(chat_id)
+    logger.info(f"Администраторы канала {chat_id}: {chat_admins}")
+    chat_admins = {admin[0] for admin in chat_admins}
 
     for admin in chat_admins:
         admin_id = admin[0]
@@ -59,10 +61,11 @@ async def report_user(message: types.Message):
             await dp.bot.send_message(
                 chat_id=admin_id,
                 text=f"Кинут репорт на пользователя {mention} "
-                "за следующее " + hlink("сообщение", message.reply_to_message.url)
+                     "за следующее " + hlink("сообщение", message.reply_to_message.url)
             )
             await asyncio.sleep(0.05)
-        except (exceptions.BotBlocked, exceptions.UserDeactivated, exceptions.CantTalkWithBots, exceptions.CantInitiateConversation):
+        except (exceptions.BotBlocked, exceptions.UserDeactivated, exceptions.CantTalkWithBots,
+                exceptions.CantInitiateConversation):
             db.del_chat_admin(chat_id, admin_id)
         except Exception as err:
             logger.exception("Не предвиденное исключение при рассылке сообщений админам чата при отправке репорта.")
