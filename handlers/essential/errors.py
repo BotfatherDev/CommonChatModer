@@ -1,3 +1,4 @@
+from aiogram.dispatcher import handler
 from aiogram.utils.exceptions import (CantDemoteChatCreator, CantParseEntities,
                                       InvalidQueryID, MessageCantBeDeleted,
                                       MessageNotModified, MessageTextIsEmpty,
@@ -16,6 +17,8 @@ async def errors_handler(update, exception):
     :param exception:
     :return: stdout logging
     """
+    this_handler = handler.current_handler.get()
+    logger.exception(f"{this_handler} has failed with exception")
 
     if isinstance(exception, CantDemoteChatCreator):
         logger.debug("Can't demote chat creator")

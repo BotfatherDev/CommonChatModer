@@ -1,8 +1,10 @@
 import asyncio
 import datetime
+from contextlib import suppress
 
 from aiogram import types
 from aiogram.dispatcher import FSMContext
+from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 from data.permissions import (set_new_user_approved_permissions,
                               set_new_user_permissions)
@@ -130,13 +132,15 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: F
             "А если ты готовишь восстание, то можешь пройти курс по разработке ботов на сайте Botfather.dev "
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
-    await query.message.delete()
+    with suppress(MessageToDeleteNotFound):
+        await query.message.delete()
     # не забываем выдать юзеру необходимые права
 
     await state.update_data(is_active=True)
     new_permissions = set_new_user_approved_permissions()
-    await bot.restrict_chat_member(
-        chat_id=chat_id,
-        user_id=user_id,
-        permissions=new_permissions,
-    )
+    with suppress(Exception):
+        await bot.restrict_chat_member(
+            chat_id=chat_id,
+            user_id=user_id,
+            permissions=new_permissions,
+        )

@@ -22,6 +22,8 @@ async def on_startup(dp):
             url=WEBHOOK_HOST + WEBHOOK_PATH,
             allowed_updates=types.AllowedUpdates.all()
         )
+        status = await dp.bot.get_webhook_info()
+        logger.info(f"Webhook status: {status}")
 
     await set_default_commands(dp)
     await on_startup_notify(dp)

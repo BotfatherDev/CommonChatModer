@@ -13,9 +13,7 @@ from data.permissions import (set_new_user_approved_permissions,
 from filters import IsGroup
 from loader import bot, db, dp
 
-
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhds]\b)')
-
 
 
 def get_restriction_period(text: str) -> int:
@@ -41,7 +39,11 @@ async def read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
     :time int: время на которое нужно замутить пользователя в минутах
     :reason str: причина мута. При отсутствии времени и/или причины, то
-    используются стандартные значения: 5 минут и None для времени и причины соответственно"""
+    используются стандартные значения: 5 минут и None для времени и причины соответственно
+
+    Примеры:
+    !ro 5m замутить пользователя на 5 минут
+    """
 
     # Создаем переменные для удобства
     (
@@ -57,8 +59,8 @@ async def read_only_mode(message: types.Message):
     command_parse = re.compile(r"(!ro|/ro) ?(\b[1-9][0-9]\w)? ?([\w+\D]+)?")
     parsed = command_parse.match(message.text)
     reason = parsed.group(3)
-    # Проверяем на наличие и корректность срока RO
-    # Проверяем на наличие причины
+    # Проверяем на наличие и корректность срока RO.
+    # Проверяем на наличие причины.
     reason = "без указания причины" if not reason else f"по причине: {reason}"
     # Получаем конечную дату, до которой нужно замутить
     ro_period = get_restriction_period(message.text)
