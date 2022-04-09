@@ -20,6 +20,8 @@ class HasPermissions(Filter):
     can_invite_users: bool = False
     can_pin_messages: bool = False
 
+    CHAT_ADMINS = {}
+
     ARGUMENTS = {
         "user_can_post_messages": "can_post_messages",
         "user_can_edit_messages": "can_edit_messages",
@@ -46,6 +48,10 @@ class HasPermissions(Filter):
         self.required_permissions = {
             arg: True for arg in self.ARGUMENTS.values() if getattr(self, arg)
         }
+
+    async def __get_cached_chat_admins(self, chat_id: int):
+        if chat_id in self.CHAT_ADMINS:
+            return self.CHAT_ADMINS[chat_id]
 
     @classmethod
     def validate(
@@ -87,7 +93,10 @@ class HasPermissions(Filter):
         """
         chat_member: types.ChatMember = self._get_cached_value(message)
         if chat_member is None:
-            admins = await message.chat.get_administrators()
+            admins = await self.__get_cached_chat_admins(message.chat.id)
+            if not admins:
+                admins = self.CHAT_ADMINS[message.chat.id] = await message.chat.get_administrators()
+
             target_user_id = await self.get_target_id(message)
             try:
                 chat_member = next(

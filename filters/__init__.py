@@ -17,9 +17,9 @@ def setup(dp: Dispatcher):
         dp.edited_channel_post_handlers,
     ]
 
-    dp.filters_factory.bind(HasPermissions, event_handlers=text_messages)
     dp.filters_factory.bind(IsReplyFilter, event_handlers=text_messages)
     dp.filters_factory.bind(IsContributor)
     dp.filters_factory.bind(IsGroup)
     dp.filters_factory.bind(IsPrivate)
     dp.filters_factory.bind(ReplyMsgIsChannelFilter)
+    dp.filters_factory.bind(HasPermissions, event_handlers=text_messages)
