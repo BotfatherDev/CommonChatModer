@@ -2,6 +2,7 @@ import asyncio
 
 from aiogram.dispatcher.filters import IsReplyFilter
 from aiogram.types import Message, Chat
+from aiogram.utils.exceptions import ChatNotFound
 from async_lru import alru_cache
 
 from filters import IsGroup
@@ -66,9 +67,12 @@ async def add_rating_handler(m: Message):
 
 
 @alru_cache(maxsize=10)
-async def get_profile(user_id) -> Chat:
+async def get_profile(chat_id, user_id) -> str:
     await asyncio.sleep(0.1)
-    chat = await bot.get_chat(user_id)
+    try:
+        chat = await bot.get_chat_member(chat_id, user_id)
+    except ChatNotFound:
+        return 'Отсутствует'
     return chat.full_name
 
 
@@ -80,12 +84,15 @@ async def get_top_helpers(m: Message):
         '🦕', '🐙', '🐮', '🐻', '🐼', '🐰', '🦊', '🦁', '🙈', '🐤', '🐸'
     ]
 
-    helpers = [helper for helper in helpers if helper[1] > 0]
+    helpers = [(user_id, rating) for user_id, rating in helpers if rating > 0]
 
     tops = '\n'.join(
         [
-            f'<b>{number}) {emoji_for_top[number - 1]} {await get_profile(helper[0])} ( {helper[1]} )</b>'
-            for number, helper in enumerate(helpers, 1)
+            f'<b>{number}) {emoji_for_top[number - 1]} '
+            f'{await get_profile(m.chat.id, user_id)} '
+            f'( {rating} )'
+            f'</b>'
+            for number, (user_id, rating) in enumerate(helpers, 1)
         ]
     )
     text = f'Топ Хелперов:\n{tops}'
