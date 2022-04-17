@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 from contextlib import suppress
 
 from aiogram import types
@@ -8,7 +7,6 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 from data.permissions import (set_new_user_approved_permissions,
                               set_new_user_permissions)
-from filters import IsGroup
 from keyboards.inline import (generate_confirm_markup, source_markup,
                               user_callback)
 from loader import bot, dp, db
