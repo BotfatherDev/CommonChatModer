@@ -68,10 +68,10 @@ async def add_rating_handler(m: Message):
 
 
 @alru_cache(maxsize=10)
-async def get_profile(chat_id, user_id) -> str:
+async def get_profile(chat_id) -> str:
     await asyncio.sleep(0.1)
     try:
-        chat = await bot.get_chat_member(chat_id, user_id)
+        chat = await bot.get_chat(chat_id)
     except ChatNotFound:
         return 'Отсутствует'
     return chat.full_name
@@ -91,7 +91,7 @@ async def get_top_helpers(m: Message):
     tops = '\n'.join(
         [
             f'<b>{number}) {emoji_for_top[number - 1]} '
-            f'{await get_profile(m.chat.id, user_id)} '
+            f'{await get_profile(user_id)} '
             f'( {rating} )'
             f'</b>'
             for number, (user_id, rating) in enumerate(helpers, 1)
