@@ -59,13 +59,14 @@ async def add_rating_handler(m: Message):
         '+': 1, '➕': 1, '👍': 1, "спасибо": 1, "дякую": 1, "спасибо большое": 2,
         '-': -1, '➖': -1, '👎': -1, "пошел нахуй": -2, "иди нахуй": -2,
     }
-    rating_user = get_rating(helper_id, ratings.get(m.text))
+    selected_rating = ratings.get(m.text)
+    rating_user = get_rating(helper_id, selected_rating)
 
     if m.text in ['+', '➕', '👍', 'спасибо', 'дякую', 'спасибо большое']:
-        text = f'{mention_from} <b>повысил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n' \
+        text = f'{mention_from} <b>повысил рейтинг на {selected_rating} пользователю</b> {mention_reply} 😳 \n' \
                f'<b>Текущий рейтинг: {rating_user}</b>'
     else:
-        text = f'{mention_from} <b>понизил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n' \
+        text = f'{mention_from} <b>понизил рейтинг на {selected_rating} пользователю</b> {mention_reply} 😳 \n' \
                f'<b>Текущий рейтинг: {rating_user}</b>'
 
     await m.answer(text)
