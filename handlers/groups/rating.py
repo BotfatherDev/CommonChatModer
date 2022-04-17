@@ -52,12 +52,12 @@ async def add_rating_handler(m: Message):
         helper_id = m.from_user.id
         mention_reply = m.from_user.get_mention(m.from_user.first_name)
     ratings = {
-        '+': 1, '➕': 1, '👍': 1,
-        '-': -1, '➖': -1, '👎': -1
+        '+': 1, '➕': 1, '👍': 1, "спасибо": 1, "дякую": 1, "спасибо большое": 1,
+        '-': -1, '➖': -1, '👎': -1, "пошел нахуй": -1, "иди нахуй": -1,
     }
     rating_user = get_rating(helper_id, ratings.get(m.text))
 
-    if m.text in ['+', '➕', '👍']:
+    if m.text in ['+', '➕', '👍', 'спасибо', 'дякую', 'спасибо большое']:
         text = f'{mention_from} <b>повысил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n' \
                f'<b>Текущий рейтинг: {rating_user}</b>'
     else:
