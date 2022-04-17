@@ -27,7 +27,11 @@ async def reset_rating_handler(m: Message):
 @dp.message_handler(
     IsGroup(),
     IsReplyFilter(True),
-    text=['+', '➕', '👍', '-', '➖', '👎']
+    text=[
+        '+', '➕', '👍', '-', '➖', '👎',
+        'спасибо', 'дякую', 'спасибо большое',
+        "пошел нахуй", "иди нахуй"
+    ]
 )
 async def add_rating_handler(m: Message):
     helper_id = m.reply_to_message.from_user.id  # айди хелпера
@@ -52,8 +56,8 @@ async def add_rating_handler(m: Message):
         helper_id = m.from_user.id
         mention_reply = m.from_user.get_mention(m.from_user.first_name)
     ratings = {
-        '+': 1, '➕': 1, '👍': 1, "спасибо": 1, "дякую": 1, "спасибо большое": 1,
-        '-': -1, '➖': -1, '👎': -1, "пошел нахуй": -1, "иди нахуй": -1,
+        '+': 1, '➕': 1, '👍': 1, "спасибо": 1, "дякую": 1, "спасибо большое": 2,
+        '-': -1, '➖': -1, '👎': -1, "пошел нахуй": -2, "иди нахуй": -2,
     }
     rating_user = get_rating(helper_id, ratings.get(m.text))
 
