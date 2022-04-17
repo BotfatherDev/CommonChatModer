@@ -1,14 +1,14 @@
 import asyncio
 
 from aiogram.dispatcher.filters import IsReplyFilter
-from aiogram.types import Message, Chat
+from aiogram.types import Message
 from aiogram.utils.exceptions import ChatNotFound
 from async_lru import alru_cache
 
 from filters import IsGroup
 from loader import db, dp, bot
 from utils.misc import rate_limit
-
+from utils.misc.middleware_helpers import override
 from utils.misc.rating import caching_rating, get_rating
 
 
@@ -23,6 +23,7 @@ async def reset_rating_handler(m: Message):
 
 @rate_limit(limit=30, key='rating',
             text='Вы не можете так часто начислять рейтинг. (<i>Сообщение автоматически удалится</i>')
+@override(user_id=362089194)
 @dp.message_handler(
     IsGroup(),
     IsReplyFilter(True),
@@ -42,7 +43,7 @@ async def add_rating_handler(m: Message):
 
     mention_reply = m.reply_to_message.from_user.get_mention(m.reply_to_message.from_user.first_name, True)
     mention_from = m.from_user.get_mention(m.from_user.first_name)
-    
+
     if helper_id == 362089194 and m.text in ['-', '👎', '➖']:
         await m.answer_photo(
             photo='https://memepedia.ru/wp-content/uploads/2019/02/uno-meme-1.jpg',
@@ -77,6 +78,7 @@ async def get_profile(chat_id, user_id) -> str:
 
 
 @rate_limit(limit=30, key='top_helpers')
+@override(user_id=362089194)
 @dp.message_handler(commands=['top_helpers'])
 async def get_top_helpers(m: Message):
     helpers = db.get_top_by_rating()
