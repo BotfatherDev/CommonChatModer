@@ -12,6 +12,7 @@ from filters import IsGroup
 from keyboards.inline import (generate_confirm_markup, source_markup,
                               user_callback)
 from loader import bot, dp, db
+from utils.misc import rate_limit
 
 
 @dp.message_handler(content_types="new_chat_members")
@@ -97,6 +98,7 @@ async def updated_chat_member(chat_member_updated: types.ChatMemberUpdated):
     )
 
 
+@rate_limit(limit=10, key='chat_member_updated')
 @dp.callback_query_handler(user_callback.filter())
 async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: FSMContext):
     """
