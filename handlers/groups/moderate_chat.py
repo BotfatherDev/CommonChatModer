@@ -165,13 +165,12 @@ async def ban_channel(message: types.Message):
 
     member_id = sender_chat.id
     member_fullname = sender_chat.title
-    member_mentioned = sender_chat.get_mention()
 
     try:
         await message.chat.ban_sender_chat(member_id)
 
         await message.answer(
-            f"Канал {member_mentioned} был успешно забанен администратором {admin_mentioned}\n"
+            f"Канал {member_fullname} был успешно забанен администратором {admin_mentioned}\n"
             f"Теперь владелец канала не сможет писать от имени любого из своих каналов"
         )
 

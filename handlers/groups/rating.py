@@ -1,13 +1,14 @@
 import asyncio
 
 from aiogram.dispatcher.filters import IsReplyFilter
-from aiogram.types import Message, Chat
+from aiogram.types import Message
+from aiogram.utils.exceptions import ChatNotFound
 from async_lru import alru_cache
 
 from filters import IsGroup
 from loader import db, dp, bot
 from utils.misc import rate_limit
-
+from utils.misc.middleware_helpers import override
 from utils.misc.rating import caching_rating, get_rating
 
 
@@ -22,10 +23,15 @@ async def reset_rating_handler(m: Message):
 
 @rate_limit(limit=30, key='rating',
             text='Вы не можете так часто начислять рейтинг. (<i>Сообщение автоматически удалится</i>')
+@override(user_id=362089194)
 @dp.message_handler(
     IsGroup(),
     IsReplyFilter(True),
-    text=['+', '➕', '👍', '-', '➖', '👎']
+    text=[
+        '+', '➕', '👍', '-', '➖', '👎',
+        'спасибо', 'дякую', 'спасибо большое',
+        "пошел нахуй", "иди нахуй"
+    ]
 )
 async def add_rating_handler(m: Message):
     helper_id = m.reply_to_message.from_user.id  # айди хелпера
@@ -41,7 +47,7 @@ async def add_rating_handler(m: Message):
 
     mention_reply = m.reply_to_message.from_user.get_mention(m.reply_to_message.from_user.first_name, True)
     mention_from = m.from_user.get_mention(m.from_user.first_name)
-    
+
     if helper_id == 362089194 and m.text in ['-', '👎', '➖']:
         await m.answer_photo(
             photo='https://memepedia.ru/wp-content/uploads/2019/02/uno-meme-1.jpg',
@@ -50,29 +56,34 @@ async def add_rating_handler(m: Message):
         helper_id = m.from_user.id
         mention_reply = m.from_user.get_mention(m.from_user.first_name)
     ratings = {
-        '+': 1, '➕': 1, '👍': 1,
-        '-': -1, '➖': -1, '👎': -1
+        '+': 1, '➕': 1, '👍': 1, "спасибо": 1, "дякую": 1, "спасибо большое": 2,
+        '-': -1, '➖': -1, '👎': -1, "пошел нахуй": -2, "иди нахуй": -2,
     }
-    rating_user = get_rating(helper_id, ratings.get(m.text))
+    selected_rating = ratings.get(m.text)
+    rating_user = get_rating(helper_id, selected_rating)
 
-    if m.text in ['+', '➕', '👍']:
-        text = f'{mention_from} <b>повысил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n' \
+    if m.text in ['+', '➕', '👍', 'спасибо', 'дякую', 'спасибо большое']:
+        text = f'{mention_from} <b>повысил рейтинг на {selected_rating} пользователю</b> {mention_reply} 😳 \n' \
                f'<b>Текущий рейтинг: {rating_user}</b>'
     else:
-        text = f'{mention_from} <b>понизил рейтинг на 1 пользователю</b> {mention_reply} 😳 \n' \
+        text = f'{mention_from} <b>понизил рейтинг на {selected_rating} пользователю</b> {mention_reply} 😳 \n' \
                f'<b>Текущий рейтинг: {rating_user}</b>'
 
     await m.answer(text)
 
 
 @alru_cache(maxsize=10)
-async def get_profile(user_id) -> Chat:
+async def get_profile(chat_id) -> str:
     await asyncio.sleep(0.1)
-    chat = await bot.get_chat(user_id)
+    try:
+        chat = await bot.get_chat(chat_id)
+    except ChatNotFound:
+        return 'Отсутствует'
     return chat.full_name
 
 
 @rate_limit(limit=30, key='top_helpers')
+@override(user_id=362089194)
 @dp.message_handler(commands=['top_helpers'])
 async def get_top_helpers(m: Message):
     helpers = db.get_top_by_rating()
@@ -80,12 +91,15 @@ async def get_top_helpers(m: Message):
         '🦕', '🐙', '🐮', '🐻', '🐼', '🐰', '🦊', '🦁', '🙈', '🐤', '🐸'
     ]
 
-    helpers = [helper for helper in helpers if helper[1] > 0]
+    helpers = [(user_id, rating) for user_id, rating in helpers if rating > 0]
 
     tops = '\n'.join(
         [
-            f'<b>{number}) {emoji_for_top[number - 1]} {await get_profile(helper[0])} ( {helper[1]} )</b>'
-            for number, helper in enumerate(helpers, 1)
+            f'<b>{number}) {emoji_for_top[number - 1]} '
+            f'{await get_profile(user_id)} '
+            f'( {rating} )'
+            f'</b>'
+            for number, (user_id, rating) in enumerate(helpers, 1)
         ]
     )
     text = f'Топ Хелперов:\n{tops}'

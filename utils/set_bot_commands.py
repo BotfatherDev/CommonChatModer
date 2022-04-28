@@ -19,13 +19,16 @@ async def set_default_commands(dp: Dispatcher):
         'help': 'Help me'
     }
     commands_admins = {
-        "set_photo": "(admins only) Установить фото в чате",
-        "set_title": "(admins only) Установить название группы",
-        "set_description": "(admins only) Установить описание группы",
-        "unro": "(admins only) Размутить пользователя",
-        "unban": "(admins only) Разбанить пользователя",
-        "media_false": "(admins only) Запрещает использование media",
-        "media_true": "(admins only) Разрешает использование media",
+        "ro": "Замутить пользователя",
+        "unro": "Размутить пользователя",
+        "ban": "Забанить пользователя",
+        "unban": "Разбанить пользователя",
+        "set_photo": "Установить фото в чате",
+        "set_title": "Установить название группы",
+        "set_description": "Установить описание группы",
+        "media_false": "Запрещает использование media",
+        "media_true": "Разрешает использование media",
+        **commands_members
     }
     await dp.bot.set_my_commands(
         [BotCommand(name, value) for name, value in command_defaults.items()],
@@ -40,4 +43,3 @@ async def set_default_commands(dp: Dispatcher):
         scope=types.BotCommandScopeAllChatAdministrators()
     )
     logger.info('Команды назначены.')
-

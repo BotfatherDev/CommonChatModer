@@ -1,4 +1,4 @@
-aiogram~=2.14
+aiogram~=2.20
 aioredis>=2.0.1
 async_lru
 loguru~=0.5.2

@@ -1,5 +1,4 @@
 import asyncio
-import datetime
 from contextlib import suppress
 
 from aiogram import types
@@ -8,7 +7,6 @@ from aiogram.utils.exceptions import MessageToDeleteNotFound
 
 from data.permissions import (set_new_user_approved_permissions,
                               set_new_user_permissions)
-from filters import IsGroup
 from keyboards.inline import (generate_confirm_markup, source_markup,
                               user_callback)
 from loader import bot, dp, db
@@ -118,6 +116,8 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: F
         return
 
     # далее, если пользователь выбрал кнопку "человек" сообщаем ему об этом
+    with suppress(MessageToDeleteNotFound):
+        await query.message.delete()
     if being == "human":
         text = str(
             f"Вопросов больше нет, {query.from_user.get_mention(as_html=True)}, проходите\n"
@@ -134,8 +134,7 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: F
             "А если ты готовишь восстание, то можешь пройти курс по разработке ботов на сайте Botfather.dev "
         )
         await bot.send_message(chat_id, text, reply_markup=source_markup)
-    with suppress(MessageToDeleteNotFound):
-        await query.message.delete()
+
     # не забываем выдать юзеру необходимые права
 
     await state.update_data(is_active=True)
