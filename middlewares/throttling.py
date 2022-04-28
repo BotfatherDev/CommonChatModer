@@ -1,9 +1,11 @@
 import asyncio
+from contextlib import suppress
 
 from aiogram import Dispatcher, types
 from aiogram.dispatcher import DEFAULT_RATE_LIMIT
 from aiogram.dispatcher.handler import CancelHandler, current_handler
 from aiogram.dispatcher.middlewares import BaseMiddleware
+from aiogram.utils import exceptions
 from aiogram.utils.exceptions import Throttled
 
 
@@ -82,4 +84,5 @@ class ThrottlingMiddleware(BaseMiddleware):
             text = self.service_text or 'Too many requests!'
 
         if throttled.exceeded_count <= 2:
-            await cq.answer(text, show_alert=True)
+            with suppress(exceptions.InvalidQueryID):
+                await cq.answer(text, show_alert=True)
