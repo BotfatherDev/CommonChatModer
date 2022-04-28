@@ -37,6 +37,25 @@ class ThrottlingMiddleware(BaseMiddleware):
             await self.message_throttled(message, t)
             raise CancelHandler()
 
+    # noinspection PyUnusedLocal
+    async def on_process_callback_query(self, cq: types.CallbackQuery, data: dict):
+        handler = current_handler.get()
+        dispatcher = Dispatcher.get_current()
+        if handler:
+            limit = getattr(handler, 'throttling_rate_limit', self.rate_limit)
+            key = getattr(handler, 'throttling_key', f"{self.prefix}_{handler.__name__}")
+        else:
+            limit = self.rate_limit
+            key = f"{self.prefix}_message"
+
+        if getattr(handler, 'override', None) == cq.from_user.id:
+            return
+        try:
+            await dispatcher.throttle(key, rate=limit)
+        except Throttled as t:
+            await self.callback_query_throttled(cq, t)
+            raise CancelHandler()
+
     async def message_throttled(self, message: types.Message, throttled: Throttled):
         handler = current_handler.get()
         if handler:
@@ -54,3 +73,13 @@ class ThrottlingMiddleware(BaseMiddleware):
             await message.delete()
         except Exception as err:
             pass
+
+    async def callback_query_throttled(self, cq: types.CallbackQuery, throttled: Throttled):
+        handler = current_handler.get()
+        if handler:
+            text = getattr(handler, "throttling_text", self.service_text) or 'Too many requests!'
+        else:
+            text = self.service_text or 'Too many requests!'
+
+        if throttled.exceeded_count <= 2:
+            await cq.answer(text, show_alert=True)
