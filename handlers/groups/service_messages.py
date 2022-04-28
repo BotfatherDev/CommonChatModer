@@ -1,6 +1,6 @@
 import asyncio
 import datetime
-import logging
+from loguru import logger
 from contextlib import suppress
 
 from aiogram import types
@@ -107,7 +107,7 @@ async def user_confirm(query: types.CallbackQuery, callback_data: dict, state: F
 
     # сразу получаем все необходимые нам переменные,а именно
     # существо (человек или бот)
-    logging.info(f'Пользователь {query.from_user.id} нажал на кнопку {query.data}. {datetime.datetime.now()}')
+    logger.info(f'Пользователь {query.from_user.id} нажал на кнопку {query.data}. {datetime.datetime.now()}')
     being = callback_data.get("being")
     # айди пользователя (приходит строкой, поэтому используем int)
     user_id = int(callback_data.get("user_id"))
