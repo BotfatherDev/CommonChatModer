@@ -1,4 +1,4 @@
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from aiogram.types import CallbackQuery
@@ -7,13 +7,11 @@ from emoji import emojize
 from keyboards.inline.metabolism import (activity_callback, gender_callback,
                                          metabolism_activity_markup,
                                          metabolism_gender_markup)
-from loader import dp
 from states.metabolism import Metabolism
 from utils.misc import metabolism_calculation, rate_limit
 
 
 @rate_limit(60, "metabolism")
-@dp.message_handler(Command("metabolism", prefixes="!/"), chat_type=types.ChatType.PRIVATE)
 async def enter_test(message: types.Message):
     await message.answer(
         "Вы начали расчет своего уровня обмена веществ.\n" "Ваш пол?",
@@ -23,7 +21,6 @@ async def enter_test(message: types.Message):
     await Metabolism.gender.set()
 
 
-@dp.callback_query_handler(gender_callback.filter(), state=Metabolism.gender)
 async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
 
@@ -37,7 +34,6 @@ async def answer_gender(call: CallbackQuery, callback_data: dict, state: FSMCont
     await Metabolism.weight.set()
 
 
-@dp.message_handler(state=Metabolism.weight)
 async def answer_weight(message: types.Message, state: FSMContext):
     answer = message.text
 
@@ -50,7 +46,6 @@ async def answer_weight(message: types.Message, state: FSMContext):
     await Metabolism.height.set()
 
 
-@dp.message_handler(state=Metabolism.height)
 async def answer_height(message: types.Message, state: FSMContext):
     answer = message.text
 
@@ -63,7 +58,6 @@ async def answer_height(message: types.Message, state: FSMContext):
     await Metabolism.age.set()
 
 
-@dp.message_handler(state=Metabolism.age)
 async def answer_age(message: types.Message, state: FSMContext):
     answer = message.text
 
@@ -79,7 +73,6 @@ async def answer_age(message: types.Message, state: FSMContext):
     await Metabolism.activity.set()
 
 
-@dp.callback_query_handler(activity_callback.filter(), state=Metabolism.activity)
 async def answer_activity(call: CallbackQuery, state: FSMContext, callback_data: dict = None):
     if isinstance(call, types.CallbackQuery):
         await call.message.edit_reply_markup(reply_markup=None)
@@ -107,8 +100,7 @@ async def answer_activity(call: CallbackQuery, state: FSMContext, callback_data:
     await state.finish()
 
 
-@dp.callback_query_handler(text="cancel")
-async def cancel_buying(call: CallbackQuery, state: FSMContext):
+async def cancel_metabolism(call: CallbackQuery, state: FSMContext):
     # Ответим в окошке с уведомлением!
     await call.answer(
         f"Вы не узнаете много нового о себе {emojize(':thinking_face:')}",
@@ -119,3 +111,15 @@ async def cancel_buying(call: CallbackQuery, state: FSMContext):
     await call.message.edit_reply_markup(reply_markup=None)
 
     await state.finish()
+
+
+def register_metabolism_handlers(dp: Dispatcher):
+    dp.register_message_handler(enter_test, Command("metabolism", prefixes="!/"), chat_type=types.ChatType.PRIVATE)
+    dp.register_callback_query_handler(
+        answer_gender, gender_callback.filter(), state=Metabolism.gender
+    )
+    dp.register_message_handler(answer_weight, state=Metabolism.weight)
+    dp.register_message_handler(answer_height, state=Metabolism.height)
+    dp.register_message_handler(answer_age, state=Metabolism.age)
+    dp.register_callback_query_handler(answer_activity, activity_callback.filter(), state=Metabolism.activity)
+    dp.register_callback_query_handler(cancel_metabolism, text="cancel", state='*')

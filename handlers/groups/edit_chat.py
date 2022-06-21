@@ -1,14 +1,12 @@
 import io
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import AdminFilter, Command
 from loguru import logger
 
 from filters import IsGroup
-from loader import dp
 
 
-@dp.message_handler(IsGroup(), Command("set_photo", prefixes="!/"),  AdminFilter())
 async def set_new_photo(message: types.Message):
     source_message = message.reply_to_message
     photo = source_message.photo[-1]
@@ -22,7 +20,6 @@ async def set_new_photo(message: types.Message):
         logger.exception(err)
 
 
-@dp.message_handler(IsGroup(), Command("set_title", prefixes="!/"), AdminFilter())
 async def set_new_title(message: types.Message):
     source_message = message.reply_to_message
     title = source_message.text
@@ -33,7 +30,6 @@ async def set_new_title(message: types.Message):
     await message.chat.set_title(title=title)
 
 
-@dp.message_handler(IsGroup(), Command("set_description", prefixes="!/"), AdminFilter())
 async def set_new_description(message: types.Message):
     source_message = message.reply_to_message
     description = source_message.text
@@ -43,3 +39,9 @@ async def set_new_description(message: types.Message):
 
     # Вариант 2
     await message.chat.set_description(description=description)
+
+
+def register_edit_chat_handlers(dp: Dispatcher):
+    dp.register_message_handler(set_new_photo, IsGroup(), Command("set_photo", prefixes="!/"), AdminFilter())
+    dp.register_message_handler(set_new_title, IsGroup(), Command("set_title", prefixes="!/"), AdminFilter())
+    dp.register_message_handler(set_new_description, IsGroup(), Command("set_description", prefixes="!/"), AdminFilter())

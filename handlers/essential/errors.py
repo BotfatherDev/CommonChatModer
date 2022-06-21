@@ -1,3 +1,4 @@
+from aiogram import Dispatcher
 from aiogram.dispatcher import handler
 from aiogram.utils.exceptions import (CantDemoteChatCreator, CantParseEntities,
                                       InvalidQueryID, MessageCantBeDeleted,
@@ -6,10 +7,7 @@ from aiogram.utils.exceptions import (CantDemoteChatCreator, CantParseEntities,
                                       TelegramAPIError, Unauthorized)
 from loguru import logger
 
-from loader import dp
 
-
-@dp.errors_handler()
 async def errors_handler(update, exception):
     """
     Exceptions handler. Catches all exceptions within task factory tasks.
@@ -58,3 +56,7 @@ async def errors_handler(update, exception):
         return True
 
     logger.exception(f"Update: {update} \n{exception}")
+
+
+def register_errors_handler(dp: Dispatcher):
+    dp.register_errors_handler(errors_handler)

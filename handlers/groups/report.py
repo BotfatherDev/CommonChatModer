@@ -1,20 +1,20 @@
-import time
 import asyncio
-from aiogram import types, exceptions
+import time
+
+from aiogram import types, exceptions, Dispatcher
+from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import hlink
-
-from filters import IsGroup, IsReplyFilter
 from loguru import logger
 
+from filters import IsGroup, IsReplyFilter
 from keyboards.inline.admin import report_reactions_keyboard, report_cb
-from loader import dp, db
+from loader import db
 
 report_command = Command("report", prefixes={"/", "!"})
 
 
-@dp.message_handler(IsGroup(), IsReplyFilter(True), report_command)
-async def report_user(message: types.Message):
+async def report_user(message: types.Message, state: FSMContext):
     """Отправляет жалобу на пользователя админам"""
 
     reply = message.reply_to_message
@@ -41,14 +41,14 @@ async def report_user(message: types.Message):
 
     if not chat_admins:
         # На всякий случай что бы не было спама
-        data = await dp.storage.get_data(chat=chat_id)
+        data = await state.storage.get_data(chat=chat_id)
         if data.get('last_get_admins_time', 0) < time.time():
-            await dp.storage.update_data(
+            await state.storage.update_data(
                 chat=chat_id,
                 data={'last_get_admins_time': time.time() + 3600}
             )
 
-            admins = await dp.bot.get_chat_administrators(chat_id)
+            admins = await message.bot.get_chat_administrators(chat_id)
             for admin in admins:
                 if admin.user.is_bot is False:
                     db.add_chat_admin(chat_id, admin.user.id)
@@ -60,7 +60,7 @@ async def report_user(message: types.Message):
     for admin in chat_admins:
         admin_id = admin
         try:
-            await dp.bot.send_message(
+            await message.bot.send_message(
                 chat_id=admin_id,
                 text=f"Кинут репорт на пользователя {mention} "
                      "за следующее " + hlink("сообщение", message.reply_to_message.url),
@@ -78,7 +78,6 @@ async def report_user(message: types.Message):
             logger.exception(err)
 
 
-@dp.message_handler(IsGroup(), report_command)
 async def report_user_if_command_is_not_reply(message: types.Message):
     """Уведомляет, что репорт должен быть ответом"""
     await message.reply(
@@ -87,7 +86,6 @@ async def report_user_if_command_is_not_reply(message: types.Message):
     )
 
 
-@dp.callback_query_handler(report_cb.filter())
 async def report_user_callback(call: types.CallbackQuery, callback_data: dict):
     action = callback_data.get('action')
     message_id = callback_data.get('message_id')
@@ -109,3 +107,13 @@ async def report_user_callback(call: types.CallbackQuery, callback_data: dict):
         logger.exception(e)
     finally:
         await call.message.delete_reply_markup()
+
+
+def register_report_handlers(dp: Dispatcher):
+    dp.register_message_handler(
+        report_user,
+        IsGroup(), IsReplyFilter(True), report_command
+    )
+    dp.register_message_handler(report_user_if_command_is_not_reply,
+                                IsGroup(), report_command)
+    dp.register_callback_query_handler(report_user_callback, report_cb.filter())

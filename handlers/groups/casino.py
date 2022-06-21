@@ -1,16 +1,14 @@
 import asyncio
 import datetime
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
 
 from data.permissions import set_user_ro_permissions
 from filters import IsGroup
-from loader import dp
 
 
-@dp.message_handler(IsGroup(), content_types=types.ContentType.DICE)
 async def win_or_loss(message: types.Message):
     if message.dice.emoji != "🎰":
         return
@@ -67,3 +65,7 @@ async def win_or_loss(message: types.Message):
             f"Пользователю @{username} ({name}) запрещено писать сообщения до {until_date} "
             f"по причине: выиграл в казино"
         )
+
+
+def register_casino_handlers(dp: Dispatcher):
+    dp.register_message_handler(win_or_loss, IsGroup(), content_types=types.ContentType.DICE)

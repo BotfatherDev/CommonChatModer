@@ -3,27 +3,24 @@
 Все хендлеры созданы для групп и все изменения
 будут видны лишь там."""
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import hbold
 
 from filters import IsGroup
-from loader import dp
 
 
-@dp.message_handler(IsGroup(), text_contains="/start")
 async def start(message: types.Message):
     await message.delete()
 
     # Выводим список комманд
-    #await help_cmd(message)
+    # await help_cmd(message)
 
 
-@dp.message_handler(IsGroup(), Command("help", prefixes="!/"))
 async def help_cmd(message: types.Message):
     """Хендлер на команду /help
     Выводит список комманд."""
-    
+
     # Создаем текст
     text = """{header1}
 /start - Начать диалог со мной
@@ -48,15 +45,20 @@ async def help_cmd(message: types.Message):
 
 {warning}
 """.format(
-            header1=hbold("Основные комманды"),
-            header2=hbold("Администрирование"),
-            header3=hbold("Работа с группой"),
-            header4=hbold("Другие комманды"),
-            warning=hbold(
-                "В группах функционал бота может отличаться.\n"
-                "* - необязательный аргумент"
-            )
+        header1=hbold("Основные комманды"),
+        header2=hbold("Администрирование"),
+        header3=hbold("Работа с группой"),
+        header4=hbold("Другие комманды"),
+        warning=hbold(
+            "В группах функционал бота может отличаться.\n"
+            "* - необязательный аргумент"
+        )
     )
-    
+
     # Отправляем список комманд
     await message.answer(text)
+
+
+def register_basic_handlers(dp: Dispatcher):
+    dp.register_message_handler(start, IsGroup(), Command("start"))
+    dp.register_message_handler(help_cmd, IsGroup(), Command("help", prefixes="!/"))
