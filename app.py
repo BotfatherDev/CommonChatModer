@@ -3,17 +3,11 @@ from loguru import logger
 
 import filters
 import middlewares
-
 from data.config import SKIP_UPDATES, WEBHOOK_HOST, WEBAPP_PORT, WEBHOOK, WEBHOOK_PATH
+from handlers import register_all_handlers
 from loader import db, dp
 from utils.notify_admins import on_startup_notify
 from utils.set_bot_commands import set_default_commands
-
-middlewares.setup(dp)
-filters.setup(dp)
-
-# noinspection PyUnresolvedReferences
-import handlers
 
 
 async def on_startup(dp):
@@ -39,6 +33,10 @@ async def on_startup(dp):
 
 
 if __name__ == "__main__":
+    middlewares.setup(dp)
+    filters.setup(dp)
+
+    register_all_handlers(dp)
     if WEBHOOK:
         executor.start_webhook(
             dispatcher=dp,

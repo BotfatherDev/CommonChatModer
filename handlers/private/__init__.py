@@ -1,3 +1,7 @@
-from .basic import dp
+from aiogram import Dispatcher
 
-__all__ = ["dp"]
+from .basic import register_basic_handlers
+
+
+def register_private_handlers(dp: Dispatcher):
+    register_basic_handlers(dp)

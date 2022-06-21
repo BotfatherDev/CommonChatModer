@@ -1,20 +1,18 @@
 import asyncio
 
+from aiogram import Dispatcher
 from aiogram.dispatcher.filters import IsReplyFilter
 from aiogram.types import Message
 from aiogram.utils.exceptions import ChatNotFound
 from async_lru import alru_cache
 
 from filters import IsGroup
-from loader import db, dp, bot
+from loader import db, bot
 from utils.misc import rate_limit
 from utils.misc.middleware_helpers import override
 from utils.misc.rating import caching_rating, get_rating
 
 
-@dp.message_handler(
-    IsGroup(),
-    text='/reset_rating', user_id=362089194)
 async def reset_rating_handler(m: Message):
     db.drop_table('RatingUsers')
     db.create_table_rating_users()
@@ -24,15 +22,6 @@ async def reset_rating_handler(m: Message):
 @rate_limit(limit=30, key='rating',
             text='Вы не можете так часто начислять рейтинг. (<i>Сообщение автоматически удалится</i>')
 @override(user_id=362089194)
-@dp.message_handler(
-    IsGroup(),
-    IsReplyFilter(True),
-    text=[
-        '+', '➕', '👍', '-', '➖', '👎',
-        'спасибо', 'дякую', 'спасибо большое',
-        "пошел нахуй", "иди нахуй"
-    ]
-)
 async def add_rating_handler(m: Message):
     helper_id = m.reply_to_message.from_user.id  # айди хелпера
     user_id = m.from_user.id  # айди юзера, который поставил + или -
@@ -84,7 +73,6 @@ async def get_profile(chat_id) -> str:
 
 @rate_limit(limit=30, key='top_helpers')
 @override(user_id=362089194)
-@dp.message_handler(commands=['top_helpers'])
 async def get_top_helpers(m: Message):
     helpers = db.get_top_by_rating()
     emoji_for_top = [
@@ -104,3 +92,21 @@ async def get_top_helpers(m: Message):
     )
     text = f'Топ Хелперов:\n{tops}'
     await m.answer(text)
+
+
+def register_ratng_handlers(dp: Dispatcher):
+    dp.register_message_handler(reset_rating_handler,
+                                IsGroup(),
+                                text='/reset_rating', user_id=362089194
+                                )
+    dp.register_message_handler(get_top_helpers, commands=['top_helpers'])
+    dp.register_message_handler(
+        add_rating_handler,
+        IsGroup(),
+        IsReplyFilter(True),
+        text=[
+            '+', '➕', '👍', '-', '➖', '👎',
+            'спасибо', 'дякую', 'спасибо большое',
+            "пошел нахуй", "иди нахуй"
+        ]
+    )

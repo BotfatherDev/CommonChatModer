@@ -3,16 +3,14 @@
 Все хендлеры созданы для личных сообщнений и все изменения
 будут видны лишь там"""
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.markdown import hbold
 
 from filters import IsPrivate
 from keyboards.inline import start_markup
-from loader import dp
 
 
-@dp.message_handler(IsPrivate(), Command("start", prefixes="/"))
 async def start(message: types.Message):
     """Хендлер на команду /start
     Приветствует пользователя.
@@ -28,7 +26,6 @@ async def start(message: types.Message):
     )
 
 
-@dp.message_handler(IsPrivate(), Command("help", prefixes="/"))
 async def help_cmd(message: types.Message):
     """
     Хендлер на команду /help
@@ -58,7 +55,6 @@ async def help_cmd(message: types.Message):
     await message.answer(text)
 
 
-@dp.callback_query_handler(text="help")
 async def callback_handler(query: types.CallbackQuery):
     """
     CallBack хендлер, который проверяет
@@ -77,3 +73,11 @@ async def callback_handler(query: types.CallbackQuery):
     # со списком комманд, которая имеет CB дату "help"
     if answer_data == "help":
         await help_cmd(query.message)
+
+
+def register_basic_handlers(dp: Dispatcher):
+    """Регистрация всех хендлеров для личных сообщений"""
+
+    dp.register_message_handler(start, IsPrivate(), Command("start", prefixes="/"))
+    dp.register_message_handler(help_cmd, IsPrivate(), Command("help", prefixes="/"))
+    dp.register_callback_query_handler(callback_handler, text="help")

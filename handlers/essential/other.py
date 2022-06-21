@@ -5,18 +5,17 @@ import datetime
 import re
 from random import randint
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Command
 
 from data.permissions import set_user_ro_permissions
-from loader import db, dp
+from loader import db
 from utils.misc import rate_limit
 from utils.misc.random_num_generator import generate_num
 
 
 @rate_limit(120, "gay")
-@dp.message_handler(Command("gay", prefixes="!/"))
 async def gay(message: types.Message):
     """Хедлер, для обработки комманды /gay или !gay
     В ответ, бот отправляет то, на сколько пользователь является геем
@@ -42,7 +41,6 @@ async def gay(message: types.Message):
 
 
 @rate_limit(120, "fun")
-@dp.message_handler(Command("biba", prefixes="!/"))
 async def biba(message: types.Message):
     """Хедлер, для обработки комманды /biba или !biba
 
@@ -71,24 +69,23 @@ async def biba(message: types.Message):
     else:
         target = message.from_user.get_mention(as_html=True)
     women_name_endings = '|'.join(['sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia'])
-    
+
     if re.match(f'\w*({women_name_endings})[^А-яA-z]?', message.from_user.first_name):
-        await message.reply(f'У {target} грудь {length//5} размера.')
+        await message.reply(f'У {target} грудь {length // 5} размера.')
         return
     # отправляем
-    emojis= ['🥲', '😔','😋', '😏', '🤤', '🥸']
+    emojis = ['🥲', '😔', '😋', '😏', '🤤', '🥸']
     emoji = ''
     for size, selected_emoji in zip((1, 5, 10, 15, 20, 25), emojis):
         if length <= size:
             break
 
         emoji = selected_emoji
-        
+
     await message.reply(f"{emoji} У {target} биба {length} см")
 
 
 @rate_limit(10, "fun")
-@dp.message_handler(Command("roll", prefixes="!/"))
 async def roll(message: types.Message):
     """Хедлер, для обработки комманды /roll или !roll
 
@@ -114,7 +111,6 @@ async def roll(message: types.Message):
     await message.reply(f"Ваше число: <b>{num}</b>")
 
 
-@dp.message_handler(content_types=types.ContentType.STICKER)
 async def delete_hamster(message: types.Message, state: FSMContext):
     sticker_sets = [set_name for (set_name,) in db.select_all_sets()]
     if message.sticker.set_name in sticker_sets:
@@ -148,3 +144,10 @@ async def delete_hamster(message: types.Message, state: FSMContext):
         await message.answer(
             f"{message.from_user.get_mention(as_html=True)}! Ща забаню сука."
         )
+
+
+def register_other_handlers(dp: Dispatcher):
+    dp.register_message_handler(gay, Command("gay", prefixes="!/"))
+    dp.register_message_handler(biba, Command("biba", prefixes="!/"))
+    dp.register_message_handler(roll, Command("roll", prefixes="!/"))
+    dp.register_message_handler(delete_hamster, content_types=types.ContentType.STICKER)

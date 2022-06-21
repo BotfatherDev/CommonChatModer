@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import re
 
-from aiogram import types
+from aiogram import types, Dispatcher
 from aiogram.dispatcher.filters import Command
 from aiogram.utils.exceptions import BadRequest
 from loguru import logger
@@ -11,7 +11,7 @@ from data.permissions import (set_new_user_approved_permissions,
                               set_no_media_permissions,
                               set_user_ro_permissions)
 from filters import IsGroup
-from loader import bot, db, dp
+from loader import bot, db
 
 restriction_time_regex = re.compile(r'(\b[1-9][0-9]*)([mhds]\b)')
 
@@ -29,12 +29,6 @@ def get_restriction_period(text: str) -> int:
     return 0
 
 
-@dp.message_handler(
-    IsGroup(),
-    regexp=r"(!ro|/ro) ?(\b[1-9][0-9]\w)? ?([\w+\D]+)?",
-    is_reply=True,
-    user_can_restrict_members=True,
-)
 async def read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ro ИЛИ /ro
     :time int: время на которое нужно замутить пользователя в минутах
@@ -106,12 +100,6 @@ async def read_only_mode(message: types.Message):
     await message.reply_to_message.delete()
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["unro"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-)
 async def undo_read_only_mode(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unro ИЛИ /unro"""
     (
@@ -149,13 +137,6 @@ async def undo_read_only_mode(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["ban"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-    reply_msg_is_channel=True
-)
 async def ban_channel(message: types.Message):
     from_user = message.from_user
     sender_chat = message.reply_to_message.sender_chat
@@ -187,12 +168,6 @@ async def ban_channel(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["ban"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-)
 async def ban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !ban ИЛИ /ban"""
 
@@ -232,13 +207,6 @@ async def ban_user(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["unban"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-    reply_msg_is_channel=True
-)
 async def unban_channel(message: types.Message):
     from_user = message.from_user
     sender_chat = message.reply_to_message.sender_chat
@@ -271,12 +239,6 @@ async def unban_channel(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["unban"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-)
 async def unban_user(message: types.Message):
     """Хендлер с фильтром в группе, где можно использовать команду !unban ИЛИ /unban"""
 
@@ -309,12 +271,6 @@ async def unban_user(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["media_false"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-)
 async def media_false_handler(message: types.Message):
     (
         admin_username,
@@ -375,7 +331,6 @@ async def media_false_handler(message: types.Message):
     await service_message.delete()
 
 
-@dp.message_handler(IsGroup(), Command(commands=["d"], prefixes="!/"), is_reply=True)
 async def block_sticker(message: types.Message):
     member = await message.chat.get_member(message.from_user.id)
     if not member.status == types.ChatMemberStatus.CREATOR:
@@ -390,12 +345,6 @@ async def block_sticker(message: types.Message):
     await message.reply("Стикерсет Забанен")
 
 
-@dp.message_handler(
-    IsGroup(),
-    Command(commands=["media_true"], prefixes="!/"),
-    is_reply=True,
-    user_can_restrict_members=True,
-)
 async def media_true_handler(message: types.Message):
     (
         admin_username,
@@ -452,3 +401,65 @@ def get_members_info(message: types.Message):
         message.reply_to_message.from_user.username,
         message.reply_to_message.from_user.get_mention(as_html=True),
     ]
+
+
+def register_moderate_chat_handlers(dp: Dispatcher):
+    dp.register_message_handler(
+        read_only_mode,
+        IsGroup(),
+        regexp=r"(!ro|/ro) ?(\b[1-9][0-9]\w)? ?([\w+\D]+)?",
+        is_reply=True,
+        user_can_restrict_members=True)
+
+    dp.register_message_handler(
+        undo_read_only_mode,
+        IsGroup(),
+        Command(commands=["unro"], prefixes="!/"),
+        is_reply=True,
+        user_can_restrict_members=True,
+    )
+    dp.register_message_handler(ban_channel,
+                                IsGroup(),
+                                Command(commands=["ban"], prefixes="!/"),
+                                is_reply=True,
+                                user_can_restrict_members=True,
+                                reply_msg_is_channel=True
+                                )
+    dp.register_message_handler(ban_user,
+                                IsGroup(),
+                                Command(commands=["ban"], prefixes="!/"),
+                                is_reply=True,
+                                user_can_restrict_members=True,
+                                )
+    dp.register_message_handler(unban_channel,
+                                IsGroup(),
+                                Command(commands=["unban"], prefixes="!/"),
+                                is_reply=True,
+                                user_can_restrict_members=True,
+                                reply_msg_is_channel=True
+                                )
+    dp.register_message_handler(unban_user,
+
+                                IsGroup(),
+                                Command(commands=["unban"], prefixes="!/"),
+                                is_reply=True,
+                                user_can_restrict_members=True)
+    dp.register_message_handler(
+        media_false_handler,
+        IsGroup(),
+        Command(commands=["media_false"], prefixes="!/"),
+        is_reply=True,
+        user_can_restrict_members=True,
+    )
+    dp.register_message_handler(
+        block_sticker,
+        IsGroup(), Command(commands=["d"], prefixes="!/"), is_reply=True
+    )
+    dp.register_message_handler(
+        media_true_handler,
+
+        IsGroup(),
+        Command(commands=["media_true"], prefixes="!/"),
+        is_reply=True,
+        user_can_restrict_members=True,
+    )

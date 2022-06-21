@@ -4,6 +4,7 @@ services:
     container_name: commonmoder
     build:
       context: .
+    stop_signal: SIGINT
     image: commonmoder
     command: python app.py
     restart: always
