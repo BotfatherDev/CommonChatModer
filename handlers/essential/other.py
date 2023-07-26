@@ -73,8 +73,7 @@ async def biba(message: types.Message):
     'ra', 'ра', 'sia', 'сия', 'ga', 'га', 'da', 'да', 'nia', 'ния', # Slavic languages
     'lie', 'ly', 'lee', 'ley', 'la', 'le', 'ette', 'elle', 'anne'  # English language
         ])
-
-    if re.match(f'\w*({women_name_endings})[^А-яA-z]?', message.from_user.first_name):
+    if re.search(f'\w*({women_name_endings})\W', message.from_user.first_name, re.IGNORECASE): 
         await message.reply(f'У {target} грудь {length // 5} размера.')
         return
     # отправляем
