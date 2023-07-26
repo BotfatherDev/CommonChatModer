@@ -26,15 +26,14 @@ async def gay(message: types.Message):
         !gay
         !gay Vasya
     """
-    # разбиваем сообщение на комманду и аргументы через регулярное выражение
-    command_parse = re.compile(r"(!gay|/gay) ?([\w+ ]+)?")
-    parsed = command_parse.match(message.text)
-    target = parsed.group(2)
-    percentage = randint(0, 100)
+    # если это ответ на сообщение, будем берять бибу автора первичного сообщения
+    # в противном случае, бибу того, кто использовал комманду
+    if message.reply_to_message:
+        target = message.reply_to_message.from_user.get_mention(as_html=True)
+    else:
+        target = message.from_user.get_mention(as_html=True)
 
-    # если пользователь не ввёл цель, он сам становится ею
-    if not target:
-        target = message.from_user.get_mention()
+    percentage = randint(0, 100)
 
     # отправляем результат
     await message.reply(f"🏳️‍🌈 Похоже, что {target} гей на {percentage}%")
@@ -68,7 +67,12 @@ async def biba(message: types.Message):
         target = message.reply_to_message.from_user.get_mention(as_html=True)
     else:
         target = message.from_user.get_mention(as_html=True)
-    women_name_endings = '|'.join(['sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia'])
+    women_name_endings = '|'.join([
+    'sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia',  # existing
+    'va', 'ва', 'ya', 'я', 'ina', 'ина', 'ka', 'ка', 'la', 'ла',  # Slavic languages
+    'ra', 'ра', 'sia', 'сия', 'ga', 'га', 'da', 'да', 'nia', 'ния', # Slavic languages
+    'lie', 'ly', 'lee', 'ley', 'la', 'le', 'ette', 'elle', 'anne'  # English language
+        ])
 
     if re.match(f'\w*({women_name_endings})[^А-яA-z]?', message.from_user.first_name):
         await message.reply(f'У {target} грудь {length // 5} размера.')
