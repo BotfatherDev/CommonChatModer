@@ -38,8 +38,48 @@ async def gay(message: types.Message):
     # отправляем результат
     await message.reply(f"🏳️‍🌈 Похоже, что {target} гей на {percentage}%")
 
+import random
+import re
 
-@rate_limit(120, "fun")
+def determine_gender(name):
+    # Lists of explicit names
+    man_names = ['Міша', 'Bodya']
+    woman_names = ['Настенька']
+
+    # Women name endings
+    women_name_endings = '|'.join([
+        'sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia',  # existing
+        'va', 'ва', 'ya', 'я', 'ina', 'ина', 'ka', 'ка', 'la', 'ла',  # Slavic languages
+        'ra', 'ра', 'sia', 'сия', 'ga', 'га', 'da', 'да', 'nia', 'ния', # Slavic languages
+        'lie', 'ly', 'lee', 'ley', 'la', 'le', 'ette', 'elle', 'anne'  # English language
+    ])
+
+    # Check explicit list and name suffixes
+    if name in woman_names or re.search(f'\w*({women_name_endings})(\W|$)', name, re.IGNORECASE):
+        return 'woman'
+    else:
+        return 'man'
+
+def select_emoji(length, is_biba):
+    # Emojis for bibas, from smallest to largest
+    biba_emojis = ['🥒', '🍌', '🌽', '🥖', '🌵', '🌴']
+
+    # Emojis for breasts, from smallest to largest
+    breast_emojis = ['🍓', '🍊', '🍎', '🥭', '🍉', '🎃']
+
+    # Select the appropriate list of emojis
+    emojis = biba_emojis if is_biba else breast_emojis
+
+    # Select an emoji based on length
+    for size, emoji in zip((1, 5, 10, 15, 20, 25), emojis):
+        if length <= size:
+            return emoji
+
+    # If none of the sizes matched, return the largest emoji
+    return emojis[-1]
+
+
+@rate_limit(60, "fun")
 async def biba(message: types.Message):
     """Хедлер, для обработки комманды /biba или !biba
 
@@ -67,25 +107,24 @@ async def biba(message: types.Message):
         target = message.reply_to_message.from_user.get_mention(as_html=True)
     else:
         target = message.from_user.get_mention(as_html=True)
-    women_name_endings = '|'.join([
-    'sa', 'са', 'ta', 'та', 'ша', 'sha', 'на', 'na', 'ия', 'ia',  # existing
-    'va', 'ва', 'ya', 'я', 'ina', 'ина', 'ka', 'ка', 'la', 'ла',  # Slavic languages
-    'ra', 'ра', 'sia', 'сия', 'ga', 'га', 'da', 'да', 'nia', 'ния', # Slavic languages
-    'lie', 'ly', 'lee', 'ley', 'la', 'le', 'ette', 'elle', 'anne'  # English language
-        ])
-    if re.search(f'\w*({women_name_endings})\W', message.from_user.first_name, re.IGNORECASE): 
-        await message.reply(f'У {target} грудь {length // 5} размера.')
-        return
-    # отправляем
-    emojis = ['🥲', '😔', '😋', '😏', '🤤', '🥸']
-    emoji = ''
-    for size, selected_emoji in zip((1, 5, 10, 15, 20, 25), emojis):
-        if length <= size:
-            break
+    
+    gender = determine_gender(message.from_user.first_name)
 
-        emoji = selected_emoji
+    # Random chance to switch gender
+    switch_chance = 20 if gender == 'woman' else 40
+    if random.randint(1, 100) <= switch_chance:
+        gender = 'man' if gender == 'woman' else 'woman'
 
-    await message.reply(f"{emoji} У {target} биба {length} см")
+    # Select an emoji for the biba or breast
+    is_biba = (gender == 'man')
+    emoji = select_emoji(length, is_biba)
+
+    # Send message based on final gender
+    if gender == 'woman':
+        await message.reply(f'{emoji} У {target} грудь {length // 5} размера.')
+    else:
+        # replace with your message for men
+        await message.reply(f"{emoji} У {target} биба {length} см")
 
 
 @rate_limit(10, "fun")
