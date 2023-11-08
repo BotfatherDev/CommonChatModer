@@ -1,7 +1,8 @@
-"""Тут находяться рофлян хендлеры.
+"""Тут находятся рофлян хендлеры.
 Не воспринимайте их серьезно. Но
 функции полезные, даже очень"""
 import datetime
+import random
 import re
 from random import randint
 
@@ -17,29 +18,38 @@ from utils.misc.random_num_generator import generate_num
 
 @rate_limit(120, "gay")
 async def gay(message: types.Message):
-    """Хедлер, для обработки комманды /gay или !gay
-    В ответ, бот отправляет то, на сколько пользователь является геем
+    """Handler for the /gay command.
+    In a humorous and respectful manner, the bot sends a random percentage reflecting a playful take on the user's alignment with a random LGBTQ+ orientation.
 
-    Примеры:
+    Examples:
         /gay
-        /gay Vasya
-        !gay
-        !gay Vasya
+        /gay Sam
     """
-    # если это ответ на сообщение, будем берять бибу автора первичного сообщения
-    # в противном случае, бибу того, кто использовал комманду
-    if message.reply_to_message:
-        target = message.reply_to_message.from_user.get_mention(as_html=True)
-    else:
-        target = message.from_user.get_mention(as_html=True)
+    # Reference the original message's author if it's a reply; otherwise, the command user.
+    target = message.reply_to_message.from_user.get_mention(
+        as_html=True) if message.reply_to_message else message.from_user.get_mention(
+        as_html=True)
 
     percentage = randint(0, 100)
 
-    # отправляем результат
-    await message.reply(f"🏳️‍🌈 Похоже, что {target} гей на {percentage}%")
+    # these are a little cringy but doesn't matter
+    phrases = [
+        "🌈 Виглядає, що сьогодні {username} на {percentage}% гей — жартуємо з любов'ю!",
+        "🌈 Сьогодні {username} може бути {percentage}% лесбійка, святкуємо різноманітність!",
+        "🌈 {username} виглядає на {percentage}% бісексуал сьогодні, які пригоди чекають?",
+        "🌈 Сьогоднішній дух {username} - {percentage}% трансгендер, вітаємо усі кольори веселки!",
+        "🌈 За шкалою квір-енергії {username} на {percentage}%, яскраво і гордо!",
+        "🌈 Чи знаєте ви, що {username} сьогодні на {percentage}% асексуал? Розкриваємо таємниці!",
+        "🌈 Пансексуальні вібрації {username} сягають {percentage}% сьогодні, хай буде весело!",
+        "🌈 {username} сьогодні випромінює небінарну енергію на {percentage}%, унікально і стильно!",
+        "🌈 Гей-радар показує, що {username} на {percentage}% гей сьогодні, час для райдужних святкувань!",
+        "🌈 Магічний квір-кубик вирішив, що {username} сьогодні {percentage}% лесбійка, неймовірно та яскраво!"
+    ]
 
-import random
-import re
+    # Send the result with a random orientation
+    await message.reply(random.choice(phrases).format(username=target, percentage=percentage))
+
+
 
 def determine_gender(name):
     # Lists of explicit names
